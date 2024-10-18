@@ -1,0 +1,267 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-atomio-deployment
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-atomio
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-atomio
+    spec:
+      {{- if $.Values.repoSecret.enabled }}
+      imagePullSecrets:
+      - name:  {{ $.Values.repoSecret.name }}
+      {{- end }}
+    spec:
+      {{if .Values.migration.enabled }}
+      initContainers:
+      - name: migration
+        image: {{ $.Values.migration.repo }}/{{ $.Values.migration.imageName }}:{{ $.Values.migration.imageTag }}
+        {{ if .Values.atomio.persistence.enabled }}
+        volumeMounts:
+          - name: {{ .Release.Name }}-atomio-files
+            mountPath: /workspace/atomio
+        {{ end }}
+        env:
+        - name: DATABASE_URL
+          value: jdbc:h2:/workspace/atomio/db
+        - name: USERNAME
+          value: sa
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-atomio-db-password
+              key: password
+      {{ end }}
+      containers:
+        - name: {{ .Release.Name }}-atomio
+          image: {{ required "An atomio.image value is required" .Values.atomio.image }}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: {{ .Values.atomio.resources.cpu }}
+              memory: {{ .Values.atomio.resources.memory }}
+          {{ if .Values.atomio.resources.memorylimit }}
+            limits:
+              memory: {{ .Values.atomio.resources.memory }}
+          {{ end }}
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 10
+          {{ if .Values.atomio.persistence.enabled }}
+          volumeMounts:
+            - name: {{ .Release.Name }}-atomio-files
+              mountPath: /workspace/atomio
+          {{ end }}
+          env:
+          {{ if and .Values.atomio.resources.initialHeapSize .Values.atomio.resources.maxHeapSize }}
+            - name: JAVA_TOOL_OPTIONS
+              value: -Xms{{ .Values.atomio.resources.initialHeapSize }} -Xmx{{ .Values.atomio.resources.maxHeapSize }}
+          {{ end }}
+            - name: SERVER_FORWARD_HEADERS_STRATEGY
+              value: NONE
+            - name: atomio.base-url
+              value: https://{{ .Values.atomio.hostName }}
+            - name: spring.datasource.username
+              value: {{ .Values.atomio.database.username | quote }}
+            - name: spring.datasource.password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-atomio-db-password
+                  key: password
+            {{ if $.Values.atomio.database.postgres.enabled }}
+            - name: spring.profiles.active
+              value: postgres
+            - name: spring.datasource.url
+              {{- if $.Values.atomio.database.postgres.external.hostName }}
+              value: "jdbc:postgresql://{{ $.Values.atomio.database.postgres.external.hostName }}:{{ $.Values.atomio.database.postgres.external.port }}/{{ $.Values.atomio.database.dbname }}"
+              {{- else }}
+              value: "jdbc:postgresql://{{ .Release.Name }}-atomio-db-service:5432/{{ $.Values.atomio.database.dbname }}"
+              {{- end }}
+            {{- end }}
+            {{ if .Values.atomio.client.urlWhitelist }}
+            - name: atomio.client.urlWhitelist
+              value: {{ .Values.atomio.client.urlWhitelist | quote }}
+            {{ end }}
+            - name: atomio.cors.allowedOriginPatterns
+              value: {{ .Values.atomio.cors.allowedOriginPatterns | quote }}
+            - name: atomio.cors.allowedHeaders
+              value: {{ .Values.atomio.cors.allowedHeaders | quote }}
+            {{ if .Values.atomio.security.hstsEnabled }}
+            - name: atomio.security.hstsEnabled
+              value: {{ .Values.atomio.security.hstsEnabled | quote }}
+            {{ end }}
+            {{ if .Values.atomio.sentry.dsn }}
+            - name: sentry.dsn
+              value: {{ .Values.atomio.sentry.dsn | quote }}
+            {{ end }}
+            {{ if .Values.atomio.sentry.environment }}
+            - name: sentry.environment
+              value: {{ .Values.atomio.sentry.environment | quote }}
+            {{ end }}
+            {{ if .Values.atomio.sentry.servername }}
+            - name: sentry.servername
+              value: {{ .Values.atomio.sentry.servername | quote }}
+            {{ end }}
+            {{ if .Values.atomio.sentry.release }}
+            - name: sentry.release
+              value: {{ .Values.atomio.sentry.release | quote }}
+            {{ end }}
+            {{ if .Values.atomio.security.enabled }}
+            - name: atomio.security.enabled
+              value: "true"
+            - name: atomio.security.issuerUri
+              value: {{ required "An atomio.security.issuerUri value is required" .Values.atomio.security.issuerUri }}
+            - name: atomio.security.audience
+              value: {{.Values.atomio.security.audience }}
+            {{ end }}
+            {{ range $index, $element := .Values.atomio.security.client }}
+            {{ if $element.url_prefix }}
+            - name: atomio.security.client.{{ $index }}.url_prefix
+              value: {{ $element.url_prefix }}
+            {{ end }}
+            {{ if $element.client_id }}
+            - name: atomio.security.client.{{ $index }}.client_id
+              value: {{ $element.client_id }}
+            {{ end }}
+            {{ if $element.client_secret }}
+            - name: atomio.security.client.{{ $index }}.client_secret
+              value: {{ $element.client_secret }}
+            {{ end }}
+            {{ if $element.token_url }}
+            - name: atomio.security.client.{{ $index }}.token_url
+              value: {{ $element.token_url }}
+            {{ end }}
+            {{ end }}
+            {{- range $configKey, $configValue := $.Values.atomio.config }}
+            - name: {{ $configKey }}
+              value: {{ $configValue | quote }}
+            {{- end }}
+      {{- if .Values.atomio.highPriority }}
+      priorityClassName: high-priority
+      {{- end }}
+      {{ if .Values.atomio.persistence.enabled }}
+      volumes:
+        - name: {{ .Release.Name }}-atomio-files
+          azureFile:
+            shareName: {{ required "A atomio.persistence.shareName value is required" .Values.atomio.persistence.shareName }}
+            secretName: {{ required "A atomio.persistence.secretName value is required" .Values.atomio.persistence.secretName }}
+      {{ end }}
+      {{- if .Values.atomio.tolerations }}
+      tolerations:
+        {{- range $index, $element := .Values.atomio.tolerations }}
+        - key: {{ $element.key }}
+          operator: {{ $element.operator }}
+          value: {{ $element.value }}
+          effect: {{ $element.effect }}
+        {{- end }}
+      {{- end }}
+{{ if and .Values.atomio.database.postgres.enabled (not .Values.atomio.database.postgres.external.hostName) }}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-atomio-db-deployment
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-atomio-db
+  strategy:
+    type: {{ .Values.atomio.database.deployment.strategy }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-atomio-db
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-atomio-db
+          image: postgres:{{ .Values.atomio.database.postgres.imageTag }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: LANG
+              value: en_US.UTF-8
+            - name: LANGUAGE
+              value: en_US:en
+            - name: LC_ALL
+              value: en_US.UTF-8
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
+            - name: TZ
+              value: {{ .Values.atomio.timeZone }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            {{ if .Values.atomio.persistence.enabled }}
+            - name: {{ .Release.Name }}-atomio-db-cluster
+              mountPath: /var/lib/postgresql/data
+            {{ end }}
+            - name: {{ .Release.Name }}-atomio-db-init
+              mountPath: /docker-entrypoint-initdb.d
+      {{- if .Values.atomio.highPriority }}
+      priorityClassName: high-priority
+      {{- end }}
+      volumes:
+        {{ if and .Values.atomio.persistence.enabled (not .Values.atomio.database.postgres.external.hostName)}}
+        - name: {{ .Release.Name }}-atomio-db-cluster
+          azureDisk:
+            kind: Managed
+            diskName: {{ required "An atomio.persistence.diskName value is required" .Values.atomio.persistence.diskName }}
+            diskURI: {{ required "An atomio.persistence.diskUri value is required" .Values.atomio.persistence.diskUri }}
+        {{ end }}
+        - name: {{ .Release.Name }}-atomio-db-init
+          configMap:
+            name: {{ .Release.Name }}-atomio-db-init
+      {{- if .Values.atomio.tolerations }}
+      tolerations:
+        {{- range $index, $element := .Values.atomio.tolerations }}
+        - key: {{ $element.key }}
+          operator: {{ $element.operator }}
+          value: {{ $element.value }}
+          effect: {{ $element.effect }}
+        {{- end }}
+      {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-atomio-db-init
+data:
+  init-db.sh: {{ tpl (.Files.Get "configuration/init-db.sh") . | quote }}
+{{ end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-atomio-db-password
+data:
+  password: {{ .Values.atomio.database.password | b64enc }}
+---
+{{- if .Values.repoSecret.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Values.repoSecret.name }}
+data:
+  .dockerconfigjson:  {{ $.Values.repoSecret.dockerconfigjson }}
+type: kubernetes.io/dockerconfigjson
+{{- end }}
+---
+{{- if .Values.atomio.persistence.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ required "A atomio.persistence.secretName value is required" .Values.atomio.persistence.secretName }}
+data:
+  azurestorageaccountname:  {{ $.Values.atomio.persistence.azaccountname | b64enc }}
+  azurestorageaccountkey:  {{ $.Values.atomio.persistence.azaccountkey | b64enc }}
+{{- end }}

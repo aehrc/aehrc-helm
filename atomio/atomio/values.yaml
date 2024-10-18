@@ -1,0 +1,116 @@
+atomio:
+  # image: [Docker repository for image]
+  # hostName: [host name]
+  persistence:
+    enabled: false
+    # shareName: [Azure Storage share name]
+    # secretName: [Kubernetes secret name]
+  security:
+    enabled: false
+    # issuerUri: [Issuer URL]
+    audience: syndication-server
+    hstsEnabled: true
+    # client:
+    #   0:
+    #     url_prefix: [ontoserver url]
+    #     client_id: example-syndication
+    #     client_secret: keycloak_secret
+    #     token_url: https://ontocloak-example.australiaeast.cloudapp.azure.com/auth/realms/aehrc/protocol/openid-connect/token
+
+  timeZone: Australia/Brisbane
+  database:
+    postgres:
+      imageTag: 14.4
+      enabled: false
+      external:
+        # hostName: [External database host name]
+        port: 5432
+    deployment:
+      strategy: Recreate
+    username: username
+    password: password
+    dbname: atomio
+
+  cors:
+    allowedOriginPatterns: "*"
+    allowedHeaders: "X-Requested-With,Origin,Content-Type,Accept,Authorization,Access-Control-Allow-Headers,cookies"
+  resources: 
+    cpu: 500m
+    memory: 1Gi
+    # these defaults result in a memory limit of 1Gi being set which Jib picks up and sets as max heap at runtime
+    initialHeapSize: false
+    maxHeapSize: false
+    memorylimit: true
+  proxy:
+    maxBodySize: 5g
+    readTimeout: "1200"
+    sendTimeout: "1200"
+    maxTempFileSize: 1024m
+  sentry:
+    dsn: false
+    servername: false
+    environment: false
+    release: false
+  tolerations: false
+  highPriority: false
+  client:
+    urlWhitelist: false
+  config:
+  # This section is for server configuration items that are not usually customised e.g. atomio.scheduled.storage.test.cron: 0 0 0 * * *
+
+
+nginx-ingress:
+  prometheus:
+    create: true
+  controller:
+    #enableLatencyMetrics: true
+    #serviceMonitor:
+    #  create: true
+    #  endpoints:
+    #    - path: /metrics
+    #      port: prometheus
+    #service:
+    #  customPorts:
+    #    - name: prometheus
+    #      port: 9113
+    #      targetPort: 9113
+    enableSnippets: true
+    enableCertManager: true
+      annotations:
+        service.beta.kubernetes.io/azure-dns-label-name: atomio
+    ingressClass:
+      create: true
+      name: "atomio-nginx"
+    ingressClassByName: true
+
+ingress:
+  #class: azure/application-gateway
+  #class: alb
+  class: atomio-nginx
+  nginx:
+    enabled: true
+    sslRedirect: false
+  appgw:
+    # Change this to actual values if using Application Gateway Ingress Controller
+    # sslcertificate: "name-of-appgw-installed-certificate"
+    requesttimeout: 600
+    className: azure-application-gateway
+  alb:
+    # loadBalancerGroup: ontoserver
+    # Change this to actual values if using ALB Ingress controller
+    # certificateArn: arn:aws:acm:location:tenancy:certificate/id
+
+certmanager:
+  enabled: true
+
+repoSecret:
+  enabled: false
+  #name: [reposecret]
+  #dockerconfigjson: [base64 configjson]
+
+
+migration:
+  enabled: false
+  imageTag: 'spring-boot-3.2-upgrade'
+  repo: 'ontoserver.azurecr.io'
+  imageName: 'atomio-h2-migration'
