@@ -1,1 +1,2 @@
-# aehrc-helm
+# aehrc-helm AEHRC Projects related Helm charts
+
