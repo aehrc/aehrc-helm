@@ -77,10 +77,10 @@ nginx-ingress:
     enableCertManager: true
     service:
       annotations:
-        service.beta.kubernetes.io/azure-dns-label-name: atomio
+        service.beta.kubernetes.io/azure-dns-label-name: atomio # Customise this in your values overwrite
     ingressClass:
       create: true
-      name: "atomio-nginx"
+      name: "atomio-nginx" # Customise this in your values overwrite
     ingressClassByName: true
 
 ingress:
