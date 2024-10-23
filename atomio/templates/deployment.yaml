@@ -146,9 +146,6 @@ spec:
             - name: {{ $configKey }}
               value: {{ $configValue | quote }}
             {{- end }}
-      {{- if .Values.atomio.highPriority }}
-      priorityClassName: high-priority
-      {{- end }}
       {{ if .Values.atomio.persistence.enabled }}
       volumes:
         - name: {{ .Release.Name }}-atomio-files
