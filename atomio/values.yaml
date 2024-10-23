@@ -63,19 +63,19 @@ nginx-ingress:
   prometheus:
     create: true
   controller:
-    #enableLatencyMetrics: true
-    #serviceMonitor:
-    #  create: true
-    #  endpoints:
-    #    - path: /metrics
-    #      port: prometheus
-    #service:
-    #  customPorts:
-    #    - name: prometheus
-    #      port: 9113
-    #      targetPort: 9113
+    enableLatencyMetrics: true
+    serviceMonitor:
+      create: true
+      endpoints:
+        - path: /metrics
+          port: prometheus
+      customPorts:
+        - name: prometheus
+          port: 9113
+          targetPort: 9113
     enableSnippets: true
     enableCertManager: true
+    service:
       annotations:
         service.beta.kubernetes.io/azure-dns-label-name: atomio
     ingressClass:
