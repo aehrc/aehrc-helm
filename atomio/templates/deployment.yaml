@@ -50,10 +50,11 @@ spec:
           {{ end }}
           ports:
             - containerPort: 8080
+            - containerPort: 18080
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8080
+              port: 18080
             initialDelaySeconds: 15
             periodSeconds: 5
             failureThreshold: 10
@@ -67,6 +68,8 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: -Xms{{ .Values.atomio.resources.initialHeapSize }} -Xmx{{ .Values.atomio.resources.maxHeapSize }}
           {{ end }}
+            - name: management.server.port
+              value: "18080"
             - name: SERVER_FORWARD_HEADERS_STRATEGY
               value: NONE
             - name: atomio.base-url
@@ -149,9 +152,8 @@ spec:
       {{ if .Values.atomio.persistence.enabled }}
       volumes:
         - name: {{ .Release.Name }}-atomio-files
-          azureFile:
-            shareName: {{ required "A atomio.persistence.shareName value is required" .Values.atomio.persistence.shareName }}
-            secretName: {{ required "A atomio.persistence.secretName value is required" .Values.atomio.persistence.secretName }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-atomio-pvc
       {{ end }}
       {{- if .Values.atomio.tolerations }}
       tolerations:

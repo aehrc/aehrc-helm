@@ -3,6 +3,9 @@ atomio:
   # hostName: [host name]
   persistence:
     enabled: false
+    storageClass: default
+    accessMode: ReadWriteOncePod # Kubernetes 1.30+ - Only 1 pod can read/write to it
+    # size: Storage Size in Gi, Ti
     # shareName: [Azure Storage share name]
     # secretName: [Kubernetes secret name]
   security:
@@ -51,12 +54,23 @@ atomio:
     servername: false
     environment: false
     release: false
+  openTelemetry:
+    enabled: false
+    otlpEndpoint: tempo-distributor.monitoring.svc.cluster.local:4317
+    zipkinEndpoint: http://tempo-distributor.monitoring.svc.cluster.local:9411
   tolerations: false
   highPriority: false
   client:
     urlWhitelist: false
   config:
-  # This section is for server configuration items that are not usually customised e.g. atomio.scheduled.storage.test.cron: 0 0 0 * * *
+    # This section is for server configuration items that are not usually customised e.g. atomio.scheduled.storage.test.cron: 0 0 0 * * *
+    # Add these to enable Prometheus monitoring
+    #management.endpoints.web.exposure.include: health,info,prometheus
+    #management.server.ssl.enabled: false
+    #management.endpoint.metrics.enabled: true
+    #management.endpoint.prometheus.enabled: true
+    #management.metrics.tags.application: atomio
+    #management.prometheus.metrics.export.enabled: true
 
 
 nginx-ingress:
