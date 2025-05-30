@@ -1,4 +1,4 @@
-{{ .Values.atomio.serviceMonitor.enabled }}
+{{- if .Values.atomio.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

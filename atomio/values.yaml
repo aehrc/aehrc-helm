@@ -5,9 +5,13 @@ atomio:
     enabled: false
     storageClass: default
     accessMode: ReadWriteOncePod # Kubernetes 1.30+ - Only 1 pod can read/write to it
-    # size: Storage Size in Gi, Ti
-    # shareName: [Azure Storage share name]
-    # secretName: [Kubernetes secret name]
+    size: 30Gi # Storage Size for files and H2 database in Gi, Ti
+    # azureFiles:
+    #   shareName: [Azure Storage share name]
+    #   secretName: [Kubernetes secret name]
+    #   resourcegroup: [provided on commandline]
+    #   azaccountname: [provided on commandline]
+    #   azaccountkey: [provided on commandline]
   security:
     enabled: false
     # issuerUri: [Issuer URL]

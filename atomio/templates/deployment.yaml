@@ -261,6 +261,6 @@ kind: Secret
 metadata:
   name: {{ required "A atomio.persistence.secretName value is required" .Values.atomio.persistence.secretName }}
 data:
-  azurestorageaccountname:  {{ $.Values.atomio.persistence.azaccountname | b64enc }}
-  azurestorageaccountkey:  {{ $.Values.atomio.persistence.azaccountkey | b64enc }}
+  azurestorageaccountname:  {{ $.Values.atomio.persistence.azureFiles.azaccountname | b64enc }}
+  azurestorageaccountkey:  {{ $.Values.atomio.persistence.azureFiles.azaccountkey | b64enc }}
 {{- end }}

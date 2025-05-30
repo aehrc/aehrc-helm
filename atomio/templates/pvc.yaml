@@ -1,5 +1,5 @@
 {{- if .Values.atomio.persistence.enabled }}
-{{- if .Values.atomio.persistence.azurefiles.shareName .Values.atomio.persistence.azurefiles.storageAccount }}
+{{- if .Values.atomio.persistence.azureFiles.shareName .Values.atomio.persistence.azureFiles.storageAccount }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -14,10 +14,12 @@ spec:
   storageClassName: azurefile-csi
   csi:
     driver: file.csi.azure.com
-    volumeHandle: "{{ .Values.atomio.persistence.azurefiles.storageAccount }}#{{ .Values.atomio.persistence.azurefiles.shareName }}"
+    volumeHandle: "{{ .Values.atomio.persistence.azureFiles.azaccountname }}#{{ .Values.atomio.persistence.azureFiles.shareName }}"
     volumeAttributes:
-      shareName: "{{ .Values.atomio.persistence.azurefiles.shareName }}"
-      storageAccount: "{{ .Values.atomio.persistence.azurefiles.storageAccount }}"
+      shareName: "{{ .Values.atomio.persistence.azureFiles.shareName }}"
+      nodeStageSecretRef:
+        name: {{ .Values.atomio.persistence.azureFiles.secretName }}
+        namespace: {{ .Release.Namespace }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -26,7 +28,7 @@ metadata:
 spec:
   accessModes:
     - {{ .Values.atomio.persistence.accessMode }}
-  storageClassName: {{ .Values.atomio.persistence.storageClass }}
+  storageClassName: azurefile-csi
   resources:
     requests:
       storage: {{ .Values.atomio.persistence.size }}
@@ -38,9 +40,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-atomio-pvc
 spec:
+  capacity:
+    storage: {{ .Values.atomio.persistence.size }}
   accessModes:
     - {{ .Values.atomio.persistence.accessMode }}
-  storageClassName: {{ .Values.atomio.persistence.storageClass | default "azurefile-csi" }}
+  storageClassName: {{ .Values.atomio.persistence.storageClass }}
   resources:
     requests:
       storage: {{ .Values.atomio.persistence.size }}
