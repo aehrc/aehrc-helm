@@ -1,0 +1,15 @@
+{{ .Values.atomio.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-service-monitor
+  labels:
+    app: {{ .Release.Name }}
+spec:
+ selector:
+   matchLabels:
+     service: {{ .Release.Name }}-atomio-management
+ endpoints:
+   - port: metric-traffic
+     path: "/actuator/prometheus"
+{{- end }}

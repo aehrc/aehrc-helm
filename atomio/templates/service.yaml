@@ -23,3 +23,18 @@ spec:
   selector:
     app: {{ .Release.Name }}-atomio-db
 {{ end }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-atomio-management-service
+  labels:
+    service: {{ .Release.Name }}-atomio-management
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 18080
+      name: metric-traffic
+  selector:
+    app: {{ .Release.Name }}-atomio

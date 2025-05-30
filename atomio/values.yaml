@@ -54,6 +54,8 @@ atomio:
     servername: false
     environment: false
     release: false
+  serviceMonitor:
+    enabled: false
   openTelemetry:
     enabled: false
     otlpEndpoint: tempo-distributor.monitoring.svc.cluster.local:4317
