@@ -70,6 +70,7 @@ atomio:
     urlWhitelist: false
   ingress:
     enabled: true
+    nginx: true
   config:
     # This section is for server configuration items that are not usually customised e.g. atomio.scheduled.storage.test.cron: 0 0 0 * * *
     # Add these to enable Prometheus monitoring
