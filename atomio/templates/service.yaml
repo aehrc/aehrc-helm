@@ -9,7 +9,7 @@ spec:
       targetPort: 8080
   selector:
     app: {{ .Release.Name }}-atomio
-{{ if and .Values.atomio.database.postgres.enabled (not .Values.atomio.database.postgres.external.hostName) }}
+{{- if and .Values.atomio.database.postgres.enabled (not .Values.atomio.database.postgres.external.hostName) }}
 ---
 kind: Service
 apiVersion: v1
@@ -22,7 +22,7 @@ spec:
       targetPort: 5432
   selector:
     app: {{ .Release.Name }}-atomio-db
-{{ end }}
+{{- end }}
 ---
 kind: Service
 apiVersion: v1

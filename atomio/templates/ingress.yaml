@@ -1,3 +1,4 @@
+{{- if .Values.atomio.ingress.enabled }}
 kind: Ingress
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -45,7 +46,7 @@ spec:
   ingressClassName:  {{ .Values.ingress.appgw.className }}
   {{- else }}
   ingressClassName:  {{ .Values.ingress.class }}
-  {{ end }}
+  {{- end }}
   {{- if not .Values.ingress.appgw.sslcertificate }}
   tls:
     - hosts:
@@ -63,3 +64,4 @@ spec:
                 name: {{ .Release.Name }}-atomio-service
                 port:
                   number: 80
+{{- end }}

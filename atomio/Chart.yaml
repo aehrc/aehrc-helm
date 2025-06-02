@@ -5,6 +5,6 @@ type: application
 version: 3.0.0
 dependencies:
   - name: nginx-ingress
-    condition: ingress.nginx.enabled
+    condition: atomio.ingress.enabled
     version: 1.4.2
     repository: https://helm.nginx.com/stable
