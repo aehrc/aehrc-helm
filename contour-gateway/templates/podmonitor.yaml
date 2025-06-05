@@ -1,0 +1,14 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-gw-podmonitor
+  labels:
+    app: {{ .Release.Name }}
+spec:
+ selector:
+   matchLabels: {{ toJson .Values.metrics.labelSelectors }}
+ podMetricsEndpoints:
+   - port: {{ .Values.metrics.port }}
+     path: {{ .Values.metrics.path }}
+{{- end }}

@@ -1,0 +1,25 @@
+openTelemetry:
+  enabled: false
+  otlpEndpoint: tempo-distributor.monitoring.svc.cluster.local:4317
+
+azure:
+  dns:
+    enabled: true
+    pipName: false
+
+debug:
+  enabled: false
+
+ipfilter:
+  enabled: false
+
+metrics:
+  enabled: false
+  labelSelector:
+    app.kubernetes.io/name: contour
+  port: metrics
+  path: /stats/prometheus
+
+gateway:
+  listenerPortHttp: 80
+  listenerPortSecure: 443

@@ -1,0 +1,58 @@
+{{- if .Values.ipfilter.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-envoy-config
+data:
+  envoy.yaml: |
+    # Enable the Envoy External Authorization gRPC plugin
+    plugins:
+      envoy_ext_authz_grpc:
+        addr: :9191
+        query: data.envoy.authz.allow
+        enable_reflection: true
+    
+    # Optional: Decision logging
+    decision_logs:
+      console: true
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-ip-filter-policy
+data:
+  ip_filter.rego: |
+    package envoy.authz
+    
+    import rego.v1
+    
+    default allow := false
+    
+    # ── 1) Build a list of CIDRs from the "X-Allowed-CIDRs" header ──
+    cidr_raw := input.attributes.request.http.headers["x-allowed-cidrs"]
+    
+    cidr_list contains trim_space(c) if {
+        cidr_raw != ""
+        c := split(cidr_raw, ",")[_]
+    }
+    
+    # ── 2) Compute client_ip: prefer X-Forwarded-For, otherwise use peer address ──
+    client_ip := ip_from_xff if {
+        hdr := input.attributes.request.http.headers["x-forwarded-for"]
+        hdr != ""
+        ip_from_xff := trim_space(split(hdr, ",")[0])
+    }
+    
+    client_ip := peer_ip if {
+        not input.attributes.request.http.headers["x-forwarded-for"]
+        peer_ip := input.attributes.source.address.address
+    }
+    
+    # ── 3) Allow if client_ip is in any of the CIDRs in cidr_list ──
+    allow if {
+        some cidr in cidr_list
+        net.cidr_contains(cidr, client_ip)
+    }
+{{- end }}

@@ -1,0 +1,36 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-gateway
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/issue-temporary-certificate: "true"
+    acme.cert-manager.io/http01-edit-in-place: "true"
+spec:
+  gatewayClassName: contour-{{ .Release.Name }}
+  infrastructure:
+    annotations:
+      {{- if .Values.azure.dns.enabled }}
+      {{- if .Values.azure.dns.pipName }}
+      service.beta.kubernetes.io/azure-pip-name: {{ .Values.azure.dns.pipName }}
+      {{- else }}
+      service.beta.kubernetes.io/azure-dns-label-name: {{ .Release.Name }}
+      {{- end }}
+      {{- end }}
+  listeners:
+    - name: web
+      port: {{ .Values.gateway.listenerPortHttp }}
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: websecure
+      port: {{ .Values.gateway.listenerPortSecure }}
+      protocol: HTTPS
+      allowedRoutes:
+        namespaces:
+          from: Same
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Release.Name }}-tls

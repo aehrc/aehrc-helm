@@ -1,0 +1,51 @@
+{{- if .Values.ipfilter.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ip-filter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ip-filter
+  template:
+    metadata:
+      labels:
+        app: ip-filter
+    spec:
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:latest-envoy
+          args:
+            - "run"
+            - "--server"
+            - "--addr=0.0.0.0:8181"
+            - "--diagnostic-addr=0.0.0.0:8282"
+            - "--config-file=/config/envoy.yaml"
+            - "/policy/ip_filter.rego"
+          ports:
+          - containerPort: 8181
+            name: http
+          - containerPort: 9191
+            name: grpc
+          - containerPort: 8282
+            name: diagnostic
+          volumeMounts:
+            - name: policy
+              mountPath: /policy
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: policy
+          configMap:
+            name: opa-ip-filter-policy
+            items:
+              - key: ip_filter.rego
+                path: ip_filter.rego
+        - name: config
+          configMap:
+            name: opa-envoy-config
+            items:
+              - key: envoy.yaml
+                path: envoy.yaml
+{{- end }}

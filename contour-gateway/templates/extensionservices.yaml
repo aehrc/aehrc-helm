@@ -1,0 +1,25 @@
+{{- if .Values.openTelemetry.enabled }}
+apiVersion: projectcontour.io/v1alpha1
+kind: ExtensionService
+metadata:
+  name: tempo-distributor
+spec:
+  protocol: h2c
+  services:
+    - name: {{ .Release.Name }}-collector
+      port: 4317
+{{- end }}
+{{- if .Values.ipfilter.enabled }}
+---
+apiVersion: projectcontour.io/v1alpha1
+kind: ExtensionService
+metadata:
+  name: ip-filter
+spec:
+  protocol: h2c  # HTTP/2 cleartext for gRPC
+  protocolVersion: v3  # Envoy API v3
+  services:
+  - name: ip-filter-service
+    port: 9191
+    weight: 100
+{{- end }}

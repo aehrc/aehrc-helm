@@ -1,0 +1,61 @@
+apiVersion: projectcontour.io/v1alpha1
+kind: ContourDeployment
+metadata:
+  name: {{ .Release.Name }}-contourdeployment
+  namespace: {{ .Release.Namespace }}
+spec:
+  contour:
+    {{- if .Values.debug.enabled }}
+    logLevel: "debug"
+    {{- end }}
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  runtimeSettings:
+    {{- if .Values.openTelemetry.enabled }}
+    tracing:
+      serviceName: grafana-gateway
+      maxPathTagLength: 256
+      extensionService:
+        namespace: {{ .Release.Namespace }}
+        name: tempo-distributor
+      includePodDetail: true
+    {{- end }}
+    envoy:
+      logging:
+        accessLogFormat: json
+        accessLogJSONFields:
+        - "@timestamp"
+        - "authority"
+        - "bytes_received"
+        - "bytes_sent"
+        {{- if .Values.openTelemetry.enabled }}
+        - "traceparent=%REQ(TRACEPARENT)%"
+        {{- end }}
+        - "duration"
+        - "method"
+        - "path"
+        - "protocol"
+        - "referer=%REQ(REFERER)%"
+        - "request_id"
+        - "requested_server_name"
+        - "response_code"
+        - "upstream_cluster"
+        - "user_agent"
+        - "x_forwarded_for"
+
+  envoy:
+    workloadType: Deployment
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 400m
+        memory: 256Mi
