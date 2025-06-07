@@ -1,0 +1,35 @@
+{{- if .Values.atomio.gateway.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-gw
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/issue-temporary-certificate: "true"
+    acme.cert-manager.io/http01-edit-in-place: "true"
+spec:
+  gatewayClassName: {{ .Values.atomio.gateway.className }}
+  infrastructure:
+    annotations:
+      {{- if .Values.azure.dns.enabled }}
+      {{- if .Values.azure.dns.pipName }}
+      service.beta.kubernetes.io/azure-pip-name: {{ .Values.azure.dns.pipName }}
+      {{- else }}
+      service.beta.kubernetes.io/azure-dns-label-name: {{ .Release.Name }}
+      {{- end }}
+      {{- end }}
+  {{- range.Values.atomio.gateway.route.hostNames }}
+  listeners:
+    - name: websecure
+      hostname: {{ . }}
+      port: {{ .Values.atomio.gateway.listenerPortSecure }}
+      protocol: HTTPS
+      allowedRoutes:
+        namespaces:
+          from: Same
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Release.Name }}-tls
+  {{- end }}
+{{- end }}

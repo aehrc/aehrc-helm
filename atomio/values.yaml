@@ -1,3 +1,15 @@
+azure:
+  dns:
+    enabled: true
+    pipName: false
+
+gateway:
+  enabled: false
+  className: envoy-gateway-class-tracing # envoy-gateway-class, envoy-gateway-class-metrics or envoy-gateway-class-tracing
+  listenerPortHttp: 80
+  listenerPortSecure: 443
+  controlPlaneNamespace: envoy-gateway-system
+
 atomio:
   # image: [Docker repository for image]
   # hostName: [host name]
@@ -71,6 +83,17 @@ atomio:
   ingress:
     enabled: true
     nginx: true
+  gateway:
+    enabled: false
+    className: envoy-gateway-class #-metrics or -tracing exists too
+    route:
+      hostNames:
+        - main hostname
+        #- hostname 2
+    listenerPortHttp: 80
+    listenerPortSecure: 443
+    controlPlaneNamespace: envoy-gateway-system
+
   config:
     # This section is for server configuration items that are not usually customised e.g. atomio.scheduled.storage.test.cron: 0 0 0 * * *
     # Add these to enable Prometheus monitoring
