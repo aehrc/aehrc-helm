@@ -18,8 +18,8 @@ spec:
       service.beta.kubernetes.io/azure-dns-label-name: {{ .Release.Name }}
       {{- end }}
       {{- end }}
-  {{- range.Values.atomio.gateway.route.hostNames }}
   listeners:
+  {{- range.Values.atomio.gateway.route.hostNames }}
     - name: websecure
       hostname: {{ . }}
       port: {{ .Values.atomio.gateway.listenerPortSecure }}
