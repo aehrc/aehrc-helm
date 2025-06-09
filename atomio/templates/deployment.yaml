@@ -3,6 +3,7 @@ apiVersion: apps/v1
 metadata:
   name: {{ .Release.Name }}-atomio-deployment
 spec:
+  replicas: {{ .Values.atomio.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-atomio
@@ -10,10 +11,10 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-atomio
-        {{- if .Values.atomio.openTelemetry.enabled }}
-        annotations:
-          instrumentation.opentelemetry.io/inject-java: "{{ .Release.Name }}-instrumentation"
-        {{- end }}
+      {{- if .Values.atomio.openTelemetry.enabled }}
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: {{ .Release.Name }}-java-instrumentation
+      {{- end }}
     spec:
       {{- if $.Values.repoSecret.enabled }}
       imagePullSecrets:

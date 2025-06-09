@@ -4,7 +4,7 @@ kind: Gateway
 metadata:
   name: {{ .Release.Name }}-gw
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/cluster-issuer: letsencrypt-{{ .Release.Name }}
     cert-manager.io/issue-temporary-certificate: "true"
     acme.cert-manager.io/http01-edit-in-place: "true"
 spec:
@@ -35,6 +35,24 @@ spec:
   {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-issuer-gw
+spec:
+  gatewayClassName: {{ .Values.atomio.gateway.className }}
+  listeners:
+  {{ $releaseName := .Release.Name }}
+  {{- range.Values.atomio.gateway.route.hostNames }}
+    - name: web
+      hostname: {{ . }}
+      port: {{ $.Values.atomio.gateway.listenerPortHttp }}
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+  {{- end }}
+---
+apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: atomio-route
@@ -58,5 +76,25 @@ spec:
         - path:
             type: PathPrefix
             value: /
-
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-{{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-key
+    email: ontoserver-support@csiro.au
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: {{ .Release.Name }}-issuer-gw
+                namespace: {{ .Release.Namespace }}
+                kind: Gateway
 {{- end }}
