@@ -4,16 +4,6 @@ azure:
     pipName: false
     dnsName: atomio-prod-test
 
-gateway:
-  enabled: false
-  route:
-    hostNames:
-      - atomio.australiaeast.cloudapp.azure.com
-  className: envoy-gateway-class-tracing # envoy-gateway-class, envoy-gateway-class-metrics or envoy-gateway-class-tracing
-  listenerPortHttp: 80
-  listenerPortSecure: 443
-  controlPlaneNamespace: envoy-gateway-system
-
 atomio:
   # image: [Docker repository for image]
   # hostName: [host name]
@@ -91,7 +81,7 @@ atomio:
     nginx: true
   gateway:
     enabled: false
-    className: envoy-gateway-class #-metrics or -tracing exists too
+    className: envoy-gateway-class-tracing #-metrics or -tracing exists too
     route:
       hostNames:
         - main hostname

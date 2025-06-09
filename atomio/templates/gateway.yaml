@@ -19,10 +19,11 @@ spec:
       {{- end }}
       {{- end }}
   listeners:
+  {{ $releaseName := .Release.Name }}
   {{- range.Values.atomio.gateway.route.hostNames }}
     - name: websecure
       hostname: {{ . }}
-      port: {{ .Values.atomio.gateway.listenerPortSecure }}
+      port: {{ $.Values.atomio.gateway.listenerPortSecure }}
       protocol: HTTPS
       allowedRoutes:
         namespaces:
@@ -30,6 +31,32 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
-          - name: {{ .Release.Name }}-tls
+          - name: {{ $releaseName }}-tls
   {{- end }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: atomio-route
+spec:
+  hostnames:
+    {{- range.Values.atomio.gateway.route.hostNames }}
+    - {{ . }}
+    {{- end }}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Release.Name }}-gw
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: {{ .Release.Name }}-atomio-service
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+
 {{- end }}

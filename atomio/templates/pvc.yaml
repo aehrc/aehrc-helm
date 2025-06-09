@@ -17,9 +17,9 @@ spec:
     volumeHandle: "{{ .Values.atomio.persistence.azureFiles.azaccountname }}#{{ .Values.atomio.persistence.azureFiles.shareName }}"
     volumeAttributes:
       shareName: "{{ .Values.atomio.persistence.azureFiles.shareName }}"
-      nodeStageSecretRef:
-        name: {{ .Values.atomio.persistence.azureFiles.secretName }}
-        namespace: {{ .Release.Namespace }}
+    nodeStageSecretRef:
+      name: {{ .Values.atomio.persistence.azureFiles.secretName }}
+      namespace: {{ .Release.Namespace }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
