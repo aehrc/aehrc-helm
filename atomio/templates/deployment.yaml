@@ -10,6 +10,10 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-atomio
+        {{- if .Values.atomio.openTelemetry.enabled }}
+        annotations:
+          instrumentation.opentelemetry.io/inject-java: "{{ .Release.Name }}-instrumentation"
+        {{- end }}
     spec:
       {{- if $.Values.repoSecret.enabled }}
       imagePullSecrets:
