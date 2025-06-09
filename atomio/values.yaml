@@ -2,9 +2,13 @@ azure:
   dns:
     enabled: true
     pipName: false
+    dnsName: atomio-prod-test
 
 gateway:
   enabled: false
+  route:
+    hostNames:
+      - atomio.australiaeast.cloudapp.azure.com
   className: envoy-gateway-class-tracing # envoy-gateway-class, envoy-gateway-class-metrics or envoy-gateway-class-tracing
   listenerPortHttp: 80
   listenerPortSecure: 443
@@ -44,6 +48,8 @@ atomio:
       external:
         # hostName: [External database host name]
         port: 5432
+    h2:
+      dbName: atomio-db
     deployment:
       strategy: Recreate
     username: username

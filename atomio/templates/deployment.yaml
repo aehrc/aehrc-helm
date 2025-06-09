@@ -15,7 +15,6 @@ spec:
       imagePullSecrets:
       - name:  {{ $.Values.repoSecret.name }}
       {{- end }}
-    spec:
       {{- if .Values.migration.enabled }}
       initContainers:
       - name: migration
@@ -90,6 +89,9 @@ spec:
               {{- else }}
               value: "jdbc:postgresql://{{ .Release.Name }}-atomio-db-service:5432/{{ $.Values.atomio.database.dbname }}"
               {{- end }}
+            {{- else }}
+            - name: spring.datasource.url
+              value: jdbc:h2:/workspace/atomio/{{ .Values.atomio.database.h2.dbName }}
             {{- end }}
             {{- if .Values.atomio.client.urlWhitelist }}
             - name: atomio.client.urlWhitelist
