@@ -13,7 +13,8 @@ atomio:
     storageClass: default
     accessMode: ReadWriteOncePod # Kubernetes 1.30+ - Only 1 pod can read/write to it
     size: 30Gi # Storage Size for files and H2 database in Gi, Ti
-    # azureFiles:
+    azureFiles:
+      enabled: false
     #   shareName: [Azure Storage share name]
     #   secretName: [Kubernetes secret name]
     #   resourcegroup: [provided on commandline]
@@ -58,9 +59,9 @@ atomio:
     maxHeapSize: false
     memorylimit: true
   proxy:
-    maxBodySize: 5g
-    readTimeout: "1200"
-    sendTimeout: "1200"
+    maxBodySize: 5g # 5Gi for gateway
+    readTimeout: "1200" # 120s for Gateway
+    sendTimeout: "1200" # 120s for Gateway
     maxTempFileSize: 1024m
   sentry:
     dsn: false
@@ -82,10 +83,10 @@ atomio:
     nginx: true
   gateway:
     enabled: false
-    className: envoy-gateway-class-tracing #-metrics or -tracing exists too
+    className: envoy-gateway-class #-metrics or -tracing exists too
     route:
       hostNames:
-        - main hostname
+        - mainhostname
         #- hostname 2
     listenerPortHttp: 80
     listenerPortSecure: 443

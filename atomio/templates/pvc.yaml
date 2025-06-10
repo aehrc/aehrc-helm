@@ -1,5 +1,5 @@
 {{- if .Values.atomio.persistence.enabled }}
-{{- if and .Values.atomio.persistence.azureFiles.shareName .Values.atomio.persistence.azureFiles.secretName }}
+{{- if and .Values.atomio.persistence.azureFiles.enabled }}
 ---
 apiVersion: v1
 kind: PersistentVolume
