@@ -80,7 +80,8 @@ atomio:
     urlWhitelist: false
   ingress:
     enabled: true
-    nginx: true
+    nginx:
+      enabled: true
   gateway:
     enabled: false
     className: envoy-gateway-class #-metrics or -tracing exists too
