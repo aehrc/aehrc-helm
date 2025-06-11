@@ -70,7 +70,7 @@ spec:
             value: /
       timeouts:
         request: {{ .Values.atomio.proxy.requestTimeout }}
-        backendRequest: {{ .Values.atomio..proxy.requestTimeout }}
+        backendRequest: {{ .Values.atomio.proxy.requestTimeout }}
 {{- if .Values.atomio.certmanager.enabled }}
 ---
 apiVersion: cert-manager.io/v1
