@@ -2,7 +2,7 @@ apiVersion: v2
 name: atomio
 description: A Helm chart for Atomio
 type: application
-version: 3.1.8
+version: 3.1.9
 dependencies:
   - name: nginx-ingress
     condition: atomio.ingress.nginx.enabled
