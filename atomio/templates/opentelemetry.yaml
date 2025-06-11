@@ -54,6 +54,15 @@ spec:
        check_interval: 1s
        limit_percentage: 75
        spike_limit_percentage: 15
+     filter/health_checks:
+       traces:
+         span:
+           # FHIR metadata spans
+           - attributes["http.route"] == "/actuator/health"
+           - name == "get /actuator/health"
+           - attributes["http.route"] == "/\*"
+           - name == "get /\*"
+
      batch:
        send_batch_size: 1000
        timeout: 0s
