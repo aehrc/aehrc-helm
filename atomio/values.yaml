@@ -60,7 +60,7 @@ atomio:
     memorylimit: true
   proxy:
     maxBodySize: 5g # 5Gi for gateway
-    readTimeout: "1200" # 120s for Gateway
+    requestTimeout: "1200" # 120s for Gateway
     sendTimeout: "1200" # 120s for Gateway
     maxTempFileSize: 1024m
   sentry:

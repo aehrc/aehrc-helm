@@ -15,7 +15,7 @@ metadata:
     nginx.org/redirect-to-https: "{{ .Values.ingress.nginx.sslRedirect }}"
     ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.nginx.sslRedirect }}"
     nginx.org/client-max-body-size: {{ .Values.atomio.proxy.maxBodySize | quote }}
-    nginx.org/proxy-read-timeout: {{ .Values.atomio.proxy.readTimeout | quote }}
+    nginx.org/proxy-read-timeout: {{ .Values.atomio.proxy.requestTimeout | quote }}
     nginx.org/proxy-send-timeout: {{ .Values.atomio.proxy.sendTimeout | quote }}
     nginx.org/proxy-max-temp-file-size: {{ .Values.atomio.proxy.maxTempFileSize | quote }}
     nginx.org/server-snippets: |
@@ -38,7 +38,7 @@ metadata:
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.alb.certificateArn | quote }}
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds={{ .Values.atomio.proxy.readTimeout }}
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds={{ .Values.atomio.proxy.requestTimeout }}
     alb.ingress.kubernetes.io/target-type: ip
     {{- end }}
 spec:
