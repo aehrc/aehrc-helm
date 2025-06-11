@@ -60,7 +60,7 @@ spec:
            # FHIR metadata spans
            - attributes["http.route"] == "/actuator/health"
            - name == "get /actuator/health"
-           - name == "get *"
+           - name == "^get /\\*$"
 
      batch:
        send_batch_size: 1000
