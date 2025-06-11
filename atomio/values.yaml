@@ -78,6 +78,9 @@ atomio:
   highPriority: false
   client:
     urlWhitelist: false
+  certmanager:
+    enabled: true
+    issuer: letsencrypt-gateway # letsencrypt if using ingress
   ingress:
     enabled: true
     nginx:
@@ -144,9 +147,6 @@ ingress:
     # loadBalancerGroup: ontoserver
     # Change this to actual values if using ALB Ingress controller
     # certificateArn: arn:aws:acm:location:tenancy:certificate/id
-
-certmanager:
-  enabled: true
 
 repoSecret:
   enabled: false
