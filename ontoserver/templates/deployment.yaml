@@ -1,0 +1,124 @@
+{{- $releaseName := .Release.Name }}
+{{- if eq .Values.ontoserver.deployment.kind "Deployment" }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ $releaseName }}-ontoserver-deployment
+spec:
+  stragegy:
+    type: {{ .Values.ontoserver.deploymentStrategy }}
+  selector:
+    matchLabels:
+      app: {{ $releaseName }}-ontoserver
+  {{- if eq .Values.ontoserver.deployment.type "scaled" }}
+    {{- if eq (int .Values.ontoserver.deployment.replicas) 1 }}
+      {{- fail "scaled deployments require .Values.ontoserver.replicas ≥ 2 or 0" }}
+    {{- end }}
+  {{- else if eq .Values.ontoserver.deployment.type "single"}}
+    {{- if gt (int .Values.ontoserver.replicas) 1 }}
+      {{- fail "single deployments require .Values.ontoserver.replicas < 2" }}
+    {{- end }}
+  {{- end }}
+  replicas: {{ .Values.ontoserver.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ $releaseName }}-ontoserver
+    spec:
+      imagePullSecrets: {{ toJson .Values.ontoserver.imagePullSecrets }}
+      tolerations: {{ toJson .Values.ontoserver.tolerations }}
+      containers:
+          
+        - name: {{ $releaseName }}-ontoserver
+          image: {{ .Values.ontoserver.image }}
+          imagePullPolicy: {{ .Values.ontoserver.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: {{ .Values.ontoserver.resources.ontoserver.requests.cpu }}
+              memory: {{ .Values.ontoserver.resources.ontoserver.requests.memory }}
+            limits:
+              cpu: {{ .Values.ontoserver.resources.ontoserver.limits.cpu }}
+              memory: {{ .Values.ontoserver.resources.ontoserver.limits.memory }}
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 10
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+                - "{{- $.Values.ontoserver.healthCheckOption }}"
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            failureThreshold: 3
+          env:
+            - name: JAVA_OPTS
+              value: -Xms{{ .Values.ontoserver.resources.ontoserver.initialHeapSize }} -Xmx{{ .Values.ontoserver.resources.ontoserver.maxHeapSize }}
+            - name: LANG
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: LANGUAGE
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: LC_ALL
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: TZ
+              value: "{{ .Values.ontoserver.timeZone }}"
+            - name: ontoserver.synd.base
+              value: https://{{ .Values.ontoserver.serverName }}/synd
+            - name: ontoserver.fhir.base
+              value: https://{{ .Values.ontoserver.serverName }}/fhir
+            - name: ontoserver.formats.html.base
+              value: https://{{ .Values.ontoserver.serverName }}/static
+            {{- if eq .Values.ontoserver.deployment.kind "scaled"}}
+            - name: ontoserver.deployment.scaling.dnsQuery
+              value: "{{ $releaseName }}-ontoserver-clustering-service"
+              {{- else }}
+              value: "{{ $releaseName }}-ontoserver.default.svc.cluster.local."
+            {{- end }}
+            {{- range $key, $value := .Values.ontoserver.config }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.ontoserver.secretConfig }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $releaseName }}-ontoserver-secrets
+                  key: {{ $key }}
+            {{- end }}
+          {{- if .Values.ontoserver.customization }}
+          volumeMounts:
+            - name: customization
+              mountPath: /well-known
+          {{- end }}
+          
+        - name: {{ $releaseName }}-ontoserver-db
+          image: "postgres:{{ .Values.ontoserver.postgresVersion }}"
+          ports:
+            - containerPort: 5432
+          resources:
+            requests: {{ toJson $.Values.ontoserver.resources.db.requests }}
+            limits: {{ toJson $.Values.ontoserver.resources.db.limits }}
+          env:
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: "trust"
+            - name: LANG
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: LANGUAGE
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: LC_ALL
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: TZ
+              value: "{{ .Values.ontoserver.timeZone }}"
+              
+      {{- if .Values.ontoserver.customization }}
+      volumes:
+        - name: customization
+          configMap:
+            name: {{ .Values.ontoserver.customization }}
+      {{- end }}
+{{- end }}

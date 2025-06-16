@@ -1,0 +1,21 @@
+{{- if eq .Values.ontoserver.deployment.type "scaled" }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-pdb
+  namespace: {{ .Release.Name }}
+spec:
+  {{- if .Values.ontoserver.deployment.podDistruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- else if .Values.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- end }}
+
+  {{- if .Values.ontoserver.deployment.podDistruptionBudget.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ .Values.ontoserver.deployment.podDistruptionBudget.unhealthyPodEvictionPolicy }}
+  {{- end }}
+
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-ontoserver
+{{- end}}

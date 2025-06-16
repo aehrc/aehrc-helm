@@ -1,0 +1,8 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Release.Name }}-ontoserver-files-retain
+provisioner: {{ .Values.ontoserver.storageProvisioner }}
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+parameters:  {{ toJson .Values.ontoserver.storageParameters }}

@@ -1,0 +1,31 @@
+{{- if .Values.ontoserver.ingress.enabled }}
+{{- $releaseName := .Release.Name }}
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ .Release.Name }}-ontoserver-ingress
+  annotations: {{ toJson .Values.ontoserver.ingress.annotations }}
+spec:
+  ingressClassName: {{ .Values.ontoserver.ingress.class }}
+  {{- if .Values.ontoserver.ingress.tlsEnabled }}
+  tls:
+    - hosts:
+      {{- range .Values.ontoserver.hostNames }}
+        - {{ . | quote }}
+      {{- end }}
+      secretName: {{ .Release.Name }}-ontoserver-tls
+  {{- end }}
+  rules:
+  {{- range .Values.ontoserver.hostNames }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $releaseName }}-ontoserver-service
+                port:
+                  number: 80
+  {{- end }}
+{{- end }}
