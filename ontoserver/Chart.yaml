@@ -5,6 +5,6 @@ type: application
 version: 1.0.0
 dependencies:
   - name: nginx-ingress
-    condition: ingress.nginx.enabled
-    version: ^2.0.1
+    condition: nginx-ingress.enabled
+    version: 2.0.1
     repository: https://helm.nginx.com/stable

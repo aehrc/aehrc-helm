@@ -3,18 +3,15 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ .Release.Name }}-pdb
-  namespace: {{ .Release.Name }}
 spec:
-  {{- if .Values.ontoserver.deployment.podDistruptionBudget.minAvailable }}
-  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- if .Values.ontoserver.deployment.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.ontoserver.deployment.podDisruptionBudget.minAvailable }}
   {{- else if .Values.pdb.maxUnavailable }}
-  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.ontoserver.deployment.podDisruptionBudget.maxUnavailable }}
   {{- end }}
-
-  {{- if .Values.ontoserver.deployment.podDistruptionBudget.unhealthyPodEvictionPolicy }}
-  unhealthyPodEvictionPolicy: {{ .Values.ontoserver.deployment.podDistruptionBudget.unhealthyPodEvictionPolicy }}
+  {{- if .Values.ontoserver.deployment.podDisruptionBudget.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ .Values.ontoserver.deployment.podDisruptionBudget.unhealthyPodEvictionPolicy }}
   {{- end }}
-
   selector:
     matchLabels:
       app: {{ .Release.Name }}-ontoserver

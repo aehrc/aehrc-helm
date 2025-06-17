@@ -32,9 +32,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $releaseName }}-statefulset-service
+  name: {{ .Release.Name }}-statefulset-service
 spec:
   clusterIP: None
   selector:
-    app: {{ $releaseName }}-ontoserver
+    app: {{ .Release.Name }}-ontoserver
 {{- end }}

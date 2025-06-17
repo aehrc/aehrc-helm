@@ -1,0 +1,17 @@
+{{- if or .Values.ontoserver.deployment.persistence.enabledForDeployment (eq .Values.ontoserver.deployment.kind "StatefulSet") }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-ontoserver-files
+spec:
+  resources:
+    requests:
+      storage: "{{ .Values.ontoserver.resources.ontoserver.requests.storage }}"
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.ontoserver.deployment.persistence.storageClass.provided.enabled }}
+  storageClassName: {{ .Release.Name }}-ontoserver-files-retain
+  {{- else}}
+  storageClassName: {{ .Values.ontoserver.deployment.persistence.storageClass.name }}
+  {{- end }}
+{{- end }}

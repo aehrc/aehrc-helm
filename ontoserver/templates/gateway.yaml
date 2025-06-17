@@ -3,19 +3,23 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: {{ .Release.Name }}-gw
+{{- if or (gt (len .Values.ontoserver.gateway.annotations) 0) .Values.ontoserver.certmanager.enabled }}
   annotations:
-  {{ toYaml .Values.ontoserver.gateway.annotations indent 4}}
-  {{- if .Values.ontoserver.gateway.certmanager.enabled }}
-    cert-manager.io/issuer: letsencrypt-{{ .Release.Name }}
+    {{- range $k, $v := .Values.ontoserver.gateway.annotations }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
+    {{- if .Values.ontoserver.certmanager.enabled }}
+    cert-manager.io/issuer:          "{{ .Values.ontoserver.certmanager.clusterIssuerName }}-{{ .Release.Name }}"
     cert-manager.io/issue-temporary-certificate: "true"
     acme.cert-manager.io/http01-edit-in-place: "true"
-  {{- end }}
+    {{- end }}
+{{- end }}
 spec:
   gatewayClassName: {{ .Values.ontoserver.gateway.className }}
   infrastructure:
     annotations: {{ toJson .Values.ontoserver.gateway.infrastructureAnnotations }}      
   listeners:
-  {{- if .Values.ontoserver.gateway.certmanager.enabled }}
+  {{- if .Values.ontoserver.certmanager.enabled }}
   # Cert Manager Listener
     - name: public-http
       protocol: HTTP
@@ -25,7 +29,7 @@ spec:
           from: Same
   {{- end }}
   {{ $releaseName := .Release.Name }}
-  {{- range.Values.atomio.gateway.route.hostNames }}
+  {{- range .Values.ontoserver.hostNames }}
     - name: websecure
       hostname: {{ . }}
       port: {{ $.Values.ontoserver.gateway.listenerPortSecure }}
@@ -45,7 +49,7 @@ metadata:
   name: atomio-route
 spec:
   hostnames:
-    {{- range.Values.atomio.gateway.route.hostNames }}
+    {{- range .Values.ontoserver.hostNames }}
     - {{ . }}
     {{- end }}
   parentRefs:
@@ -67,7 +71,7 @@ spec:
       timeouts:
         request: "{{ .Values.ontoserver.gateway.requestTimeout }}"
         backendRequest: "{{ .Values.ontoserver.gateway.requestTimeout }}"
-{{- if .Values.ontoserver.gateway.certmanager.enabled }}
+{{- if .Values.ontoserver.certmanager.enabled }}
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer

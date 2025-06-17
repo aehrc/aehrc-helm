@@ -1,22 +1,42 @@
+#
+# These value defaults provide configuration for a single read only server
+# kubernetes Deployment with a Postgres Database sidecar container and Gatewway API ingress
+#
 ontoserver:
-  deployment:
-    kind: Deployment # Or StatefulSet - Deployment will be default
-    type: single # Options are single or scaled
-    deploymentStrategy: RollingUpdate # When using Deployment Kind this sets the K8s deployment strategy
-    podDistruptionBudget: # Only used when deployment type is scaled
-      enabled: true 
-      minAvailable: 1 
-      maxUnavailable: false # If you set this, set minAvaliable to false
-      unhealthyPodEvictionPolicy: false # Optional "Fail"  # or "DoNotEvict"
-  serverName: localhost # Must match a hostName
-  hostNames:
-    - locahost
   image: quay.io/aehrc/ontoserver:ctsa-6
   imagePullPolicy: Always
   imagePullSecrets: []
+  deployment:
+    kind: Deployment # Or StatefulSet
+    type: single # Options are single or scaled - Scaled will require shared database
+    replicas: 1 # Set 1 for single and min. 2 for scaled type deployment. Can be set to 0 to turn Onto off
+    deploymentStrategy: RollingUpdate # When using Deployment Kind this sets the K8s deployment strategy
+    persistence:
+      # Set requested storage size at ontoserver.resources.ontoserver.requests.storage
+      enabledForDeployment: false # In case of kind: Deployment we can attach a Persistene Volume
+      storageClass:
+        name: default # This is only used if ontoserver.deployment.persistence.storageClass.provided.enabled is false
+        # Provided storage class with reclaimPolicy retain
+        provided:
+          enabled: true
+          storageProvisioner: disk.csi.azure.com
+          storageParameters:
+            skuName: Premium_LRS
+            kind: Managed
+    podDisruptionBudget: # Only used when ontoserver.deployment.type is scaled
+      enabled: true 
+      minAvailable: 1 
+      maxUnavailable: false # If you set this, set minAvaliable will not be used
+      unhealthyPodEvictionPolicy: false # Optional "IfHealthyBudget" or "AlwaysAllow" (default)
+    db: # Deploy a Postgres Database container
+      enabled: true
+      postgresVersion: 12
+  serverName: localhost # Must match a hostName
+  # Hostnames the ingress/gateway will be responding from
+  hostNames:
+    - locahost
   timeZone: UTC
   language: en_US
-  replicas: 1 # Set min. 2 if the deployment type is scaled or 0 to turn Onto off
   resources:
     ontoserver:
       requests:
@@ -28,15 +48,21 @@ ontoserver:
         memory: 4G
       initialHeapSize: 2800m
       maxHeapSize: 2800m
+    db:   # For containered Postgres DB - not used for external db is enabled
+      requests:
+        cpu: 1
+        memory: 1G
+      limits:
+        cpu: 1
+        memory: 1G
   healthCheckOption: -s
   certmanager:
     enabled: true
+    clusterIssuerName: letsencrypt # Existing CluserIssuer for Ingress or base name for Gateway
+    email: noreply@example.com
   gateway:
     enabled: true
     listenerPortSecure: 443 # Depends on the gateway class - Traefik is 8443
-    certmanager: 
-      enabled: true
-      email: noreply@example.com
     annotations: {}
     infrastructureAnnotations: {}
     className: envoy-gateway-class
@@ -47,10 +73,6 @@ ontoserver:
     class: ontoserver-nginx
     tlsEnabled: false
   tolerations: []
-  storageProvisioner: disk.csi.azure.com
-  storageParameters:
-    skuName: Premium_LRS
-    kind: Managed
   customization: false
   config:
     ONTOSERVER_INSECURE: "true"
@@ -59,6 +81,9 @@ ontoserver:
   secretConfig: {}
 
 nginx-ingress:
+  enabled: false
   controller:
-    ingressClass: ontoserver-nginx
+    ingressClass:
+      create: true
+      name:  ontoserver-nginx
     ingressClassByName: true

@@ -1,35 +1,33 @@
-{{- $releaseName := .Release.Name }}
-{{- $ns := .Release.Namespace }}
 {{- if eq .Values.ontoserver.deployment.kind "StatefulSet" }}
 kind: StatefulSet
 apiVersion: apps/v1
 metadata:
-  name: {{ $releaseName }}-statefulset
+  name: {{ .Release.Name }}-statefulset
 spec:
   {{- if eq .Values.ontoserver.deployment.type "scaled" }}
     {{- if eq (int .Values.ontoserver.deployment.replicas) 1 }}
-      {{- fail "scaled deployments require .Values.ontoserver.replicas ≥ 2 or 0" }}
+      {{- fail "scaled deployments require .Values.ontoserver.deployment.replicas ≥ 2 or 0" }}
     {{- end }}
   {{- else if eq .Values.ontoserver.deployment.type "single"}}
-    {{- if gt (int .Values.ontoserver.replicas) 1 }}
-      {{- fail "single deployments require .Values.ontoserver.replicas < 2" }}
+    {{- if gt (int .Values.ontoserver.deployment.replicas) 1 }}
+      {{- fail "single deployments require .Values.ontoserver.deployment.replicas < 2" }}
     {{- end }}
   {{- end }}
-  replicas: {{ .Values.ontoserver.replicas }}
+  replicas: {{ .Values.ontoserver.deployment.replicas }}
   podManagementPolicy: Parallel
-  serviceName: {{ $releaseName }}-statefulset-service
+  serviceName: {{ .Release.Name }}-statefulset-service
   selector:
     matchLabels:
-      app: {{ $releaseName }}-ontoserver
+      app: {{ .Release.Name }}-ontoserver
   template:
     metadata:
       labels:
-        app: {{ $releaseName }}-ontoserver
+        app: {{ .Release.Name }}-ontoserver
     spec:
       imagePullSecrets: {{ toJson .Values.ontoserver.imagePullSecrets }}
       tolerations: {{ toJson .Values.ontoserver.tolerations }}
       containers:
-        - name: {{ $releaseName }}-ontoserver
+        - name: {{ .Release.Name }}-ontoserver
           image: {{ .Values.ontoserver.image }}
           imagePullPolicy: {{ .Values.ontoserver.imagePullPolicy }}
           ports:
@@ -52,7 +50,7 @@ spec:
             exec:
               command:
                 - /healthcheck.sh
-                - "{{- $.Values.ontoserver.healthCheckOption }}"
+                - "{{- .Values.ontoserver.healthCheckOption }}"
             initialDelaySeconds: 60
             periodSeconds: 5
             failureThreshold: 3
@@ -73,9 +71,9 @@ spec:
               value: https://{{ .Values.ontoserver.serverName }}/fhir
             - name: ontoserver.formats.html.base
               value: https://{{ .Values.ontoserver.serverName }}/static
-            {{- if eq .Values.ontoserver.deployment.kind "scaled"}}
+            {{- if eq .Values.ontoserver.deployment.kind "scaled" }}
             - name: ontoserver.deployment.scaling.dnsQuery
-              value: "{{ $releaseName }}-ontoserver-clustering-service"
+              value: "{{ .Release.Name }}-ontoserver-clustering-service"
             {{- end }}
             {{- range $key, $value := .Values.ontoserver.config }}
             - name: {{ $key }}
@@ -85,16 +83,39 @@ spec:
             - name: {{ $key }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ $releaseName }}-ontoserver-secrets
+                  name: {{ .Release.Name }}-ontoserver-secrets
                   key: {{ $key }}
             {{- end }}
           volumeMounts:
-            - name: {{ $releaseName }}-ontoserver-files
+            - name: {{ .Release.Name }}-ontoserver-files
               mountPath: /var/onto
             {{- if .Values.ontoserver.customization }}
             - name: customization
               mountPath: /well-known
             {{- end }}
+        {{- if and (eq .Values.ontoserver.deployment.type "scaled") .Values.ontoserver.deployment.db.enabled }}
+          {{- fail "Scaled deployments require shared database and cannot have the default sidecar database. Set ontoserver.deployment.db.enabled to false and set spring.datasource.url in ontoserver.config to an external db jdbc URL." }}
+        {{- end }}
+        {{- if and .Values.ontoserver.deployment.db.enabled (not (eq .Values.ontoserver.deployment.type "scaled")) }}
+        - name: {{ .Release.Name }}-ontoserver-db
+          image: "postgres:{{ .Values.ontoserver.deployment.db.postgresVersion }}"
+          ports:
+            - containerPort: 5432
+          resources:
+            requests: {{ toJson .Values.ontoserver.resources.db.requests }}
+            limits: {{ toJson .Values.ontoserver.resources.db.limits }}
+          env:
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: "trust"
+            - name: LANG
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: LANGUAGE
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: LC_ALL
+              value: "{{ .Values.ontoserver.language }}.UTF-8"
+            - name: TZ
+              value: "{{ .Values.ontoserver.timeZone }}"
+        {{- end }}
 
       {{- if .Values.ontoserver.customization }}
       volumes:
@@ -105,12 +126,16 @@ spec:
       
   volumeClaimTemplates:
     - metadata:
-        name: {{ $releaseName }}-ontoserver-files
+        name: {{ .Release.Name }}-ontoserver-files
       spec:
         resources:
           requests:
             storage: {{ .Values.ontoserver.resources.ontoserver.requests.storage }}
         accessModes:
           - ReadWriteOnce
+        {{- if .Values.ontoserver.deployment.persistence.storageClass.provided.enabled }}
         storageClassName: {{ .Release.Name }}-ontoserver-files-retain
+        {{- else}}
+        storageClassName: {{ .Values.ontoserver.deployment.persistence.storageClass.name }}
+        {{- end }}
 {{- end }}

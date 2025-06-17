@@ -1,35 +1,33 @@
-{{- $releaseName := .Release.Name }}
 {{- if eq .Values.ontoserver.deployment.kind "Deployment" }}
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: {{ $releaseName }}-ontoserver-deployment
+  name: {{ .Release.Name }}-ontoserver-deployment
 spec:
-  stragegy:
-    type: {{ .Values.ontoserver.deploymentStrategy }}
+  strategy:
+    type: {{ .Values.ontoserver.deployment.deploymentStrategy }}
   selector:
     matchLabels:
-      app: {{ $releaseName }}-ontoserver
+      app: {{ .Release.Name }}-ontoserver
   {{- if eq .Values.ontoserver.deployment.type "scaled" }}
     {{- if eq (int .Values.ontoserver.deployment.replicas) 1 }}
-      {{- fail "scaled deployments require .Values.ontoserver.replicas ≥ 2 or 0" }}
+      {{- fail "scaled deployments require .Values.ontoserver.deployment.replicas ≥ 2 or 0" }}
     {{- end }}
   {{- else if eq .Values.ontoserver.deployment.type "single"}}
-    {{- if gt (int .Values.ontoserver.replicas) 1 }}
-      {{- fail "single deployments require .Values.ontoserver.replicas < 2" }}
+    {{- if gt (int .Values.ontoserver.deployment.replicas) 1 }}
+      {{- fail "single deployments require .Values.ontoserver.deployment.replicas < 2" }}
     {{- end }}
   {{- end }}
-  replicas: {{ .Values.ontoserver.replicas }}
+  replicas: {{ .Values.ontoserver.deployment.replicas }}
   template:
     metadata:
       labels:
-        app: {{ $releaseName }}-ontoserver
+        app: {{ .Release.Name }}-ontoserver
     spec:
       imagePullSecrets: {{ toJson .Values.ontoserver.imagePullSecrets }}
       tolerations: {{ toJson .Values.ontoserver.tolerations }}
       containers:
-          
-        - name: {{ $releaseName }}-ontoserver
+        - name: {{ .Release.Name }}-ontoserver
           image: {{ .Values.ontoserver.image }}
           imagePullPolicy: {{ .Values.ontoserver.imagePullPolicy }}
           ports:
@@ -52,7 +50,7 @@ spec:
             exec:
               command:
                 - /healthcheck.sh
-                - "{{- $.Values.ontoserver.healthCheckOption }}"
+                - "{{- .Values.ontoserver.healthCheckOption }}"
             initialDelaySeconds: 60
             periodSeconds: 5
             failureThreshold: 3
@@ -73,11 +71,9 @@ spec:
               value: https://{{ .Values.ontoserver.serverName }}/fhir
             - name: ontoserver.formats.html.base
               value: https://{{ .Values.ontoserver.serverName }}/static
-            {{- if eq .Values.ontoserver.deployment.kind "scaled"}}
+            {{- if eq .Values.ontoserver.deployment.kind "scaled" }}
             - name: ontoserver.deployment.scaling.dnsQuery
-              value: "{{ $releaseName }}-ontoserver-clustering-service"
-              {{- else }}
-              value: "{{ $releaseName }}-ontoserver.default.svc.cluster.local."
+              value: "{{ .Release.Name }}-ontoserver-clustering-service"
             {{- end }}
             {{- range $key, $value := .Values.ontoserver.config }}
             - name: {{ $key }}
@@ -87,22 +83,28 @@ spec:
             - name: {{ $key }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ $releaseName }}-ontoserver-secrets
+                  name: {{ .Release.Name }}-ontoserver-secrets
                   key: {{ $key }}
             {{- end }}
-          {{- if .Values.ontoserver.customization }}
+          {{- if or .Values.ontoserver.customization .Values.ontoserver.deployment.persistence.enabledForDeployment }}
           volumeMounts:
+            {{- if .Values.ontoserver.customization }}
             - name: customization
               mountPath: /well-known
+            {{- end }}
+            {{- if .Values.ontoserver.deployment.persistence.enabledForDeployment }}
+            - name: ontoserver-files
+              mountPath: /var/onto
+            {{- end }}
           {{- end }}
-          
-        - name: {{ $releaseName }}-ontoserver-db
-          image: "postgres:{{ .Values.ontoserver.postgresVersion }}"
+        {{- if .Values.ontoserver.deployment.db.enabled }}
+        - name: {{ .Release.Name }}-ontoserver-db
+          image: "postgres:{{ .Values.ontoserver.deployment.db.postgresVersion }}"
           ports:
             - containerPort: 5432
           resources:
-            requests: {{ toJson $.Values.ontoserver.resources.db.requests }}
-            limits: {{ toJson $.Values.ontoserver.resources.db.limits }}
+            requests: {{ toJson .Values.ontoserver.resources.db.requests }}
+            limits: {{ toJson .Values.ontoserver.resources.db.limits }}
           env:
             - name: POSTGRES_HOST_AUTH_METHOD
               value: "trust"
@@ -114,11 +116,19 @@ spec:
               value: "{{ .Values.ontoserver.language }}.UTF-8"
             - name: TZ
               value: "{{ .Values.ontoserver.timeZone }}"
+        {{- end }}
               
-      {{- if .Values.ontoserver.customization }}
+      {{- if or .Values.ontoserver.customization .Values.ontoserver.deployment.persistence.enabledForDeployment }}
       volumes:
+        {{- if .Values.ontoserver.customization }}
         - name: customization
           configMap:
             name: {{ .Values.ontoserver.customization }}
+        {{- end }}
+        {{- if .Values.ontoserver.deployment.persistence.enabledForDeployment }}
+        - name: ontoserver-files
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-ontoserver-files
+        {{- end }}
       {{- end }}
 {{- end }}

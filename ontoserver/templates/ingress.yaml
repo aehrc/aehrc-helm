@@ -4,7 +4,18 @@ kind: Ingress
 apiVersion: networking.k8s.io/v1
 metadata:
   name: {{ .Release.Name }}-ontoserver-ingress
-  annotations: {{ toJson .Values.ontoserver.ingress.annotations }}
+{{- if or (gt (len .Values.ontoserver.ingress.annotations) 0) .Values.ontoserver.certmanager.enabled }}
+  annotations:
+    {{- range $k, $v := .Values.ontoserver.ingress.annotations }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
+    {{- if .Values.ontoserver.certmanager.enabled }}
+    cert-manager.io/cluster-issuer:          "{{ .Values.ontoserver.certmanager.clusterIssuerName }}"
+    cert-manager.io/issue-temporary-certificate: "true"
+    acme.cert-manager.io/http01-edit-in-place:    "true"
+    {{- end }}
+{{- end }}
+
 spec:
   ingressClassName: {{ .Values.ontoserver.ingress.class }}
   {{- if .Values.ontoserver.ingress.tlsEnabled }}

@@ -1,8 +1,10 @@
+{{- if and (or .Values.ontoserver.deployment.persistence.enabledForDeployment (eq .Values.ontoserver.deployment.kind "StatefulSet")) .Values.ontoserver.deployment.persistence.storageClass.provided }}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: {{ .Release.Name }}-ontoserver-files-retain
-provisioner: {{ .Values.ontoserver.storageProvisioner }}
+provisioner: {{ .Values.ontoserver.deployment.persistence.storageClass.provided.storageProvisioner }}
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
-parameters:  {{ toJson .Values.ontoserver.storageParameters }}
+parameters:  {{ toJson .Values.ontoserver.deployment.persistence.storageClass.provided.storageParameters }}
+{{- end }}
