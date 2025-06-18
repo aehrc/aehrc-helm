@@ -6,16 +6,18 @@ metadata:
 spec:
   {{- if eq .Values.ontoserver.deployment.type "scaled" }}
     {{- if eq (int .Values.ontoserver.deployment.replicas) 1 }}
-      {{- fail "scaled deployments require .Values.ontoserver.deployment.replicas ≥ 2 or 0" }}
+      {{- fail "scaled deployments require ontoserver.deployment.replicas should be greater or equal to 2 or 0" }}
     {{- end }}
-  {{- else if eq .Values.ontoserver.deployment.type "single"}}
+  {{- else if eq .Values.ontoserver.deployment.type "single" }}
     {{- if gt (int .Values.ontoserver.deployment.replicas) 1 }}
-      {{- fail "single deployments require .Values.ontoserver.deployment.replicas < 2" }}
+      {{- fail "single deployments require ontoserver.deployment.replicas < 2" }}
     {{- end }}
+  {{- else }}
+    {{- fail "ontoserver.deployment.type not recognised. Must be single or scaled" }}
   {{- end }}
   replicas: {{ .Values.ontoserver.deployment.replicas }}
   podManagementPolicy: Parallel
-  serviceName: {{ .Release.Name }}-statefulset-service
+  serviceName: {{ .Release.Name }}-headless
   selector:
     matchLabels:
       app: {{ .Release.Name }}-ontoserver
@@ -24,21 +26,25 @@ spec:
       labels:
         app: {{ .Release.Name }}-ontoserver
     spec:
+      {{- if .Values.ontoserver.imagePullSecrets }}
       imagePullSecrets: {{ toJson .Values.ontoserver.imagePullSecrets }}
+      {{- end}}
+      {{- if .Values.ontoserver.tolerations }}
       tolerations: {{ toJson .Values.ontoserver.tolerations }}
+      {{- end}}
       containers:
         - name: {{ .Release.Name }}-ontoserver
-          image: {{ .Values.ontoserver.image }}
-          imagePullPolicy: {{ .Values.ontoserver.imagePullPolicy }}
+          image: {{ required "ontoserver.image is required " .Values.ontoserver.image }}
+          imagePullPolicy: {{ required "ontoserver.imagePullPolicy is required" .Values.ontoserver.imagePullPolicy }}
           ports:
             - containerPort: 8080
           resources:
             requests:
-              cpu: {{ .Values.ontoserver.resources.ontoserver.requests.cpu }}
-              memory: {{ .Values.ontoserver.resources.ontoserver.requests.memory }}
+              cpu: {{ required "ontoserver.resources.ontoserver.requests.cpu is required" .Values.ontoserver.resources.ontoserver.requests.cpu }}
+              memory: {{ required "ontoserver.resources.ontoserver.requests.memory is required" .Values.ontoserver.resources.ontoserver.requests.memory }}
             limits:
-              cpu: {{ .Values.ontoserver.resources.ontoserver.limits.cpu }}
-              memory: {{ .Values.ontoserver.resources.ontoserver.limits.memory }}
+              cpu: {{ required "ontoserver.resources.ontoserver.limits.cpu is required" .Values.ontoserver.resources.ontoserver.limits.cpu }}
+              memory: {{ required "ontoserver.resources.ontoserver.limits.memory is required" .Values.ontoserver.resources.ontoserver.limits.memory }}
           livenessProbe:
             exec:
               command:
@@ -56,25 +62,40 @@ spec:
             failureThreshold: 3
           env:
             - name: JAVA_OPTS
-              value: -Xms{{ .Values.ontoserver.resources.ontoserver.initialHeapSize }} -Xmx{{ .Values.ontoserver.resources.ontoserver.maxHeapSize }}
+              value: -Xms{{ required "ontoserver.resources.ontoserver.initialHeapSize is required" .Values.ontoserver.resources.ontoserver.initialHeapSize }} -Xmx{{ required ".Values.ontoserver.resources.ontoserver.maxHeapSize is required" .Values.ontoserver.resources.ontoserver.maxHeapSize }}
             - name: LANG
-              value: "{{ .Values.ontoserver.language }}.UTF-8"
+              value: "{{ required "ontoserver.language is required" .Values.ontoserver.language }}.UTF-8"
             - name: LANGUAGE
-              value: "{{ .Values.ontoserver.language }}.UTF-8"
+              value: "{{ required "ontoserver.language is required" .Values.ontoserver.language }}.UTF-8"
             - name: LC_ALL
-              value: "{{ .Values.ontoserver.language }}.UTF-8"
+              value: "{{ required "ontoserver.language is required" .Values.ontoserver.language }}.UTF-8"
             - name: TZ
-              value: "{{ .Values.ontoserver.timeZone }}"
+              value: "{{ required "ontoserver.timeZone is required" .Values.ontoserver.timeZone }}"
+            {{- $hostName := required "ontoserver.serverName is required" .Values.ontoserver.serverName }}
             - name: ontoserver.synd.base
-              value: https://{{ .Values.ontoserver.serverName }}/synd
+              value: https://{{ $hostName }}/synd
             - name: ontoserver.fhir.base
-              value: https://{{ .Values.ontoserver.serverName }}/fhir
+              value: https://{{ $hostName }}/fhir
             - name: ontoserver.formats.html.base
-              value: https://{{ .Values.ontoserver.serverName }}/static
-            {{- if eq .Values.ontoserver.deployment.kind "scaled" }}
+              value: https://{{ $hostName }}/static
+            {{- if eq .Values.ontoserver.deployment.type "scaled" }}
             - name: ontoserver.deployment.scaling.dnsQuery
               value: "{{ .Release.Name }}-ontoserver-clustering-service"
-            {{- end }}
+            - name: ontoserver.deployment.scaled
+              value: "true"
+            - name: ontoserver.internal.deployment.scaledReadOnly
+              {{- if required "ontoserver.deployment.isReadOnly is required" .Values.ontoserver.deployment.isReadOnly }}
+              value: "true"
+              {{- else}}
+              value: "false"
+              {{- end }}
+            {{- end}}
+            - name: ontoserver.deployment.readOnly
+              {{- if required "ontoserver.deployment.isReadOnly is required" .Values.ontoserver.deployment.isReadOnly }}
+              value: "true"
+              {{- else}}
+              value: "false"
+              {{- end }}
             {{- range $key, $value := .Values.ontoserver.config }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -98,7 +119,7 @@ spec:
         {{- end }}
         {{- if and .Values.ontoserver.deployment.db.enabled (not (eq .Values.ontoserver.deployment.type "scaled")) }}
         - name: {{ .Release.Name }}-ontoserver-db
-          image: "postgres:{{ .Values.ontoserver.deployment.db.postgresVersion }}"
+          image: "postgres:{{ required "ontoserver.deployment.db.postgresVersion is required" .Values.ontoserver.deployment.db.postgresVersion }}"
           ports:
             - containerPort: 5432
           resources:
@@ -108,16 +129,16 @@ spec:
             - name: POSTGRES_HOST_AUTH_METHOD
               value: "trust"
             - name: LANG
-              value: "{{ .Values.ontoserver.language }}.UTF-8"
+              value: "{{ required "ontoserver.language is required" .Values.ontoserver.language }}.UTF-8"
             - name: LANGUAGE
-              value: "{{ .Values.ontoserver.language }}.UTF-8"
+              value: "{{ required "ontoserver.language is required" .Values.ontoserver.language }}.UTF-8"
             - name: LC_ALL
-              value: "{{ .Values.ontoserver.language }}.UTF-8"
+              value: "{{ required "ontoserver.language is required" .Values.ontoserver.language }}.UTF-8"
             - name: TZ
-              value: "{{ .Values.ontoserver.timeZone }}"
+              value: value: "{{ required "ontoserver.timeZone is required" .Values.ontoserver.timeZone }}"
         {{- end }}
 
-      {{- if .Values.ontoserver.customization }}
+      {{- if not (empty .Values.ontoserver.customization) }}
       volumes:
         - name: customization
           configMap:
@@ -128,14 +149,18 @@ spec:
     - metadata:
         name: {{ .Release.Name }}-ontoserver-files
       spec:
+        {{- if .Values.ontoserver.deployment.persistence.existingVolume.enabled }}
+        volumeName: {{ .Values.ontoserver.deployment.persistence.existingVolume.name }}
+        {{- else }}
         resources:
           requests:
-            storage: {{ .Values.ontoserver.resources.ontoserver.requests.storage }}
+            storage: {{ required "ontoserver.resources.ontoserver.requests.storage is required for Scaled deployments" .Values.ontoserver.resources.ontoserver.requests.storage }}
         accessModes:
           - ReadWriteOnce
         {{- if .Values.ontoserver.deployment.persistence.storageClass.provided.enabled }}
         storageClassName: {{ .Release.Name }}-ontoserver-files-retain
         {{- else}}
         storageClassName: {{ .Values.ontoserver.deployment.persistence.storageClass.name }}
+        {{- end }}
         {{- end }}
 {{- end }}

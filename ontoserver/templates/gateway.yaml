@@ -15,9 +15,11 @@ metadata:
     {{- end }}
 {{- end }}
 spec:
-  gatewayClassName: {{ .Values.ontoserver.gateway.className }}
+  gatewayClassName: {{ required "ontoserver.gateway.className is required" .Values.ontoserver.gateway.className }}
   infrastructure:
-    annotations: {{ toJson .Values.ontoserver.gateway.infrastructureAnnotations }}      
+    {{- if gt (len .Values.ontoserver.gateway.infrastructureAnnotations) 0 }}
+    annotations: {{ toJson .Values.ontoserver.gateway.infrastructureAnnotations }}
+    {{- end }}  
   listeners:
   {{- if .Values.ontoserver.certmanager.enabled }}
   # Cert Manager Listener
@@ -28,19 +30,24 @@ spec:
         namespaces:
           from: Same
   {{- end }}
+  {{- if eq (len .Values.ontoserver.hostNames) 0 }}
+    {{- fail "Minimum one entry is required in ontoserver.hostNames" }}
+  {{- end }}
   {{ $releaseName := .Release.Name }}
   {{- range .Values.ontoserver.hostNames }}
     - name: websecure
       hostname: {{ . }}
-      port: {{ $.Values.ontoserver.gateway.listenerPortSecure }}
+      port: {{ required "ontoserver.gateway.listenerPortSecure is required" $.Values.ontoserver.gateway.listenerPortSecure }}
       protocol: HTTPS
       allowedRoutes:
         namespaces:
           from: Same
+      {{- if $.Values.ontoserver.gateway.tlsEnabled }}
       tls:
         mode: Terminate
         certificateRefs:
           - name: {{ $releaseName }}-tls
+      {{- end }}
   {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -68,9 +75,11 @@ spec:
         - path:
             type: PathPrefix
             value: /
+      {{- if .Values.ontoserver.gateway.requestTimeout }}
       timeouts:
         request: "{{ .Values.ontoserver.gateway.requestTimeout }}"
         backendRequest: "{{ .Values.ontoserver.gateway.requestTimeout }}"
+      {{- end }}
 {{- if .Values.ontoserver.certmanager.enabled }}
 ---
 apiVersion: cert-manager.io/v1
@@ -85,7 +94,7 @@ spec:
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: letsencrypt-key
-    email: {{ .Values.ontoserver.certmanager.email }}
+    email: {{ required "ontoserver.certmanager.email required" .Values.ontoserver.certmanager.email }}
     solvers:
       - http01:
           gatewayHTTPRoute:

@@ -9,7 +9,7 @@ spec:
       targetPort: 8080
   selector:
     app: {{ .Release.Name }}-ontoserver
-{{- if eq .Values.ontoserver.deployment.type "scaled"}}
+{{- if eq .Values.ontoserver.deployment.type "scaled" }}
 ---
 kind: Service
 apiVersion: v1
@@ -27,12 +27,12 @@ spec:
   selector:
     app: {{ .Release.Name }}-ontoserver
 {{- end }}
-{{- if eq .Values.ontoserver.deployment.kind "StatefulSet"}}
+{{- if eq .Values.ontoserver.deployment.kind "StatefulSet" }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-statefulset-service
+  name: {{ .Release.Name }}-headless
 spec:
   clusterIP: None
   selector:

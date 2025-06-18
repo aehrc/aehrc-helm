@@ -3,8 +3,11 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: {{ .Release.Name }}-ontoserver-files-retain
-provisioner: {{ .Values.ontoserver.deployment.persistence.storageClass.provided.storageProvisioner }}
+provisioner: {{ required "ontoserver.deployment.persistence.storageClass.provided.storageProvisioner is required" .Values.ontoserver.deployment.persistence.storageClass.provided.storageProvisioner }}
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
+{{- if empty .Values.ontoserver.deployment.persistence.storageClass.provided.storageParameters }}
+  {{- fail "Provide storage parameters in ontoserver.deployment.persistence.storageClass.provided.storageParameters" }}
+{{- end }}
 parameters:  {{ toJson .Values.ontoserver.deployment.persistence.storageClass.provided.storageParameters }}
 {{- end }}

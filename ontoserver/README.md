@@ -1,66 +1,82 @@
-Ontoserver Helm Chart - Scalable, Read-write
-==========================================
+# Ontoserver Helm Chart - Single/Scaled deployments ReadOnly/ReadWrite with or without persistence
 
-This chart deploys a scalable cluster of Ontoserver instances that supports both 
-read and write. You must provide a PostgreSQL database for the cluster to use.
+This chart deploys Ontoserver instances in Kubernetes in either single or scaled modes, supports both read-only and read-write operations, and can be configured with or without persistent storage (PVC or existing volumes). It can optionally include a Postgres sidecar and expose services via the Gateway API or standard Ingress with or without a bundled [F5 Nginx Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/).
 
-Here is a list of the supported values:
+## Values
 
-| Value                                             | Description                                                                                                                                                                                                                              |
-|---------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ontoserver.hostName`                             | The hostname that will be used to access the Ontoserver instance. This will be used in the Ingress resource, and also for configuring the URLs that Ontoserver returns in responses.                                                     |
-| `ontoserver.image`                                | The Docker image that will be pulled down and deployed. Note that if the image is in a protected repository, you will need to point to the credentials using the `imagePullSecrets` value.                                               |
-| `ontoserver.imagePullPolicy`                      | See [Kubernetes documentation  - Image pull policy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy).                                                                                                           |
-| `ontoserver.imagePullSecrets`                     | See [Kubernetes documentation - Specifying imagePullSecrets on a pod](https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod).                                                                      |
-| `ontoserver.timeZone`                             | The timezone that will be configured for the container.                                                                                                                                                                                  |
-| `ontoserver.language`                             | The language that will be configured for the container.                                                                                                                                                                                  |
-| `ontoserver.deployment.replicas`                             | The number of Ontoserver instances that will be deployed.                                                                                                                                                                                |
-| `ontoserver.resources.ontoserver.requests`        | The resource requests that will be applied to the Ontoserver container. See [Kubernetes documentation - Resource management for pods and containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)     |
-| `ontoserver.resources.ontoserver.limits`          | The resource limits that will be applied to the Ontoserver container. See [Kubernetes documentation - Resource management for pods and containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)       |
-| `ontoserver.resources.ontoserver.initialHeapSize` | The initial heap size that will be configured for the Ontoserver JVM.                                                                                                                                                                    |
-| `ontoserver.resources.ontoserver.maxHeapSize`     | The max heap size that will be configured for the Ontoserver JVM.                                                                                                                                                                        |
-| `ontoserver.healthCheckOption`                    | Option to pass to the healtch check script. Use `-s` to  wait for the preload to complete successfully before reporting that the container is ready. Or `-l`  and the preload will run in the background.                                |
-| `ontoserver.deploymentStrategy`                   | The deployment strategy that will be used for the Ontoserver deployment. See [Kubernetes documentation - Deployment strategies](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).                         |
-| `ontoserver.ingressClass`                         | The ingress class that will be used for the Ingress resource. By default, the [NGINX ingress controller](https://docs.nginx.com/nginx-ingress-controller/) will be used.                                                                 |
-| `ontoserver.ingressAnnotations`                   | The annotations that will be applied to the Ingress resource. See [Kubernetes documentation - Ingress annotations](https://kubernetes.io/docs/concepts/services-networking/ingress/#annotations).                                        |
-| `ontoserver.ingressTlsEnabled`                    | If set to `true`, the Ingress resource will be configured to use TLS.                                                                                                                                                                    |
-| `ontoserver.tolerations`                          | The tolerations that will be applied to the Ontoserver deployment. See [Kubernetes documentation - Taints and tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).                               |
-| `ontoserver.storageClass`                         | The storage class that will be used for the persistent volume claim.                                                                                                                                                                     |
-| `ontoserver.customization`                        | The name of a ConfigMap containing custom logo and CSS files to be deployed with the application. See [Customization](#customization) for more information.                                                                              |
-| `ontoserver.config`                               | Additional configuration values that will be passed to the Ontoserver instance. See [Ontoserver documentation - configuration properties](https://ontoserver.csiro.au/docs/6/config-all.html) for more information.                      |
-| `ontoserver.secretConfig`                         | Additional configuration values that should be stored within a Secret resource.                                                                                                                                                          |
+| Value                                                                          | Description                                                                                   |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| **ontoserver.image**                                                           | Container image for Ontoserver (e.g. `quay.io/aehrc/ontoserver:ctsa-6`).                      |
+| **ontoserver.imagePullPolicy**                                                 | Kubernetes image pull policy (`Always`, `IfNotPresent`, etc.).                                |
+| **ontoserver.imagePullSecrets**                                                | Array of Secrets for pulling a private image.                                                 |
+| **ontoserver.deployment.kind**                                                 | Controller kind: `Deployment` or `StatefulSet`.                                               |
+| **ontoserver.deployment.type**                                                 | Topology type: `single` (standalone) or `scaled` (requires shared database cluster).          |
+| **ontoserver.deployment.isReadOnly**                                           | Read‑only mode flag; should remain `true` for scaled clusters as read/write is experimental.  |
+| **ontoserver.deployment.replicas**                                             | Number of replicas (`1` for single, ≥ 2 for scaled, `0` to disable).                          |
+| **ontoserver.deployment.deploymentStrategy**                                   | K8s update strategy when using Deployment kind (`RollingUpdate` or `Recreate`).               |
+| **ontoserver.deployment.persistence.enabledForDeployment**                     | Enable a PVC on Deployment (read‑only storage).                                               |
+| **ontoserver.deployment.persistence.existingVolume.enabled**                   | Bind to an existing PersistentVolume instead of provisioning.                                 |
+| **ontoserver.deployment.persistence.existingVolume.name**                      | Name of the existing PersistentVolume to bind.                                                |
+| **ontoserver.deployment.persistence.storageClass.name**                        | StorageClass to use if not using the built‑in provisioner.                                    |
+| **ontoserver.deployment.persistence.storageClass.provided.enabled**            | Enable the built‑in CSI StorageClass with reclaimPolicy=Retain.                               |
+| **ontoserver.deployment.persistence.storageClass.provided.storageProvisioner** | CSI driver name (e.g. `disk.csi.azure.com`).                                                  |
+| **ontoserver.deployment.persistence.storageClass.provided.storageParameters**  | Parameters for the CSI driver (e.g. SKU, kind).                                               |
+| **ontoserver.deployment.podDisruptionBudget.enabled**                          | Enable PodDisruptionBudget (only when `type: scaled`).                                        |
+| **ontoserver.deployment.podDisruptionBudget.minAvailable**                     | Minimum pods that must remain available.                                                      |
+| **ontoserver.deployment.podDisruptionBudget.maxUnavailable**                   | Maximum pods allowed unavailable (alternative to `minAvailable`).                             |
+| **ontoserver.deployment.podDisruptionBudget.unhealthyPodEvictionPolicy**       | Policy for evicting unhealthy pods (`IfHealthyBudget` or `AlwaysAllow`).                      |
+| **ontoserver.deployment.db.enabled**                                           | Enable the embedded Postgres sidecar.                                                         |
+| **ontoserver.deployment.db.postgresVersion**                                   | Postgres image tag (e.g. `12`).                                                               |
+| **ontoserver.serverName**                                                      | Hostname used by Ontoserver to generate URLs (must match one entry in `hostNames`).           |
+| **ontoserver.hostNames**                                                       | Array of hostnames for Gateway/Ingress routing.                                               |
+| **ontoserver.timeZone**                                                        | Container time zone (e.g. `UTC`).                                                             |
+| **ontoserver.language**                                                        | Locale for the container (`en_US`, etc.).                                                     |
+| **ontoserver.resources.ontoserver.requests**                                   | CPU, memory and storage requests for the Ontoserver container.                                |
+| **ontoserver.resources.ontoserver.limits**                                     | CPU and memory limits for the Ontoserver container.                                           |
+| **ontoserver.resources.ontoserver.initialHeapSize**                            | JVM initial heap size (e.g. `2800m`).                                                         |
+| **ontoserver.resources.ontoserver.maxHeapSize**                                | JVM maximum heap size (e.g. `2800m`).                                                         |
+| **ontoserver.resources.db.requests**                                           | CPU and memory requests for the Postgres sidecar.                                             |
+| **ontoserver.resources.db.limits**                                             | CPU and memory limits for the Postgres sidecar.                                               |
+| **ontoserver.healthCheckOption**                                               | Flags for the healthcheck script (`-p`, `-s`, `-f`).                                          |
+| **ontoserver.certmanager.enabled**                                             | Enable cert-manager resources.                                                                |
+| **ontoserver.certmanager.clusterIssuerName**                                   | ClusterIssuer name (or prefix) for Gateway/Ingress certificates.                              |
+| **ontoserver.certmanager.email**                                               | Email for ACME registration.                                                                  |
+| **ontoserver.gateway.enabled**                                                 | Enable Gateway API resources.                                                                 |
+| **ontoserver.gateway.listenerPortSecure**                                      | Secure listener port for HTTPS routes.                                                        |
+| **ontoserver.gateway.annotations**                                             | Annotations to apply to the Gateway resource.                                                 |
+| **ontoserver.gateway.infrastructureAnnotations**                               | Annotations for the underlying infrastructure (service, LoadBalancer, etc.).                  |
+| **ontoserver.gateway.className**                                               | GatewayClass name.                                                                            |
+| **ontoserver.gateway.requestTimeout**                                          | Request timeout duration (e.g. `120s`).                                                       |
+| **ontoserver.gateway.tlsEnabled**                                              | Enable TLS termination on the Gateway listeners.                                              |
+| **ontoserver.ingress.enabled**                                                 | Enable standard Kubernetes Ingress instead of Gateway API.                                    |
+| **ontoserver.ingress.annotations**                                             | Annotations to apply to the Ingress resource.                                                 |
+| **ontoserver.ingress.className**                                               | IngressClass to use for the Ingress resource.                                                 |
+| **ontoserver.ingress.tlsEnabled**                                              | Enable TLS on the Ingress resource.                                                           |
+| **ontoserver.tolerations**                                                     | Pod tolerations for node scheduling.                                                          |
+| **ontoserver.customization**                                                   | Name of a `ConfigMap` containing custom CSS/logo files (see [Customization](#customization)). |
+| **ontoserver.config**                                                          | Arbitrary Ontoserver configuration entries (plain-text).                                      |
+| **ontoserver.secretConfig**                                                    | Secret-backed Ontoserver configuration entries (in a generated `Secret`).                     |
+| **nginx-ingress.enabled**                                                      | Enable the bundled nginx-ingress controller.                                                  |
+| **nginx-ingress.controller.ingressClass.create**                               | Create a custom IngressClass for the bundled controller.                                      |
+| **nginx-ingress.controller.ingressClass.name**                                 | Name of the custom IngressClass.                                                              |
+| **nginx-ingress.controller.ingressClassByName**                                | Lookup IngressClasses by name rather than annotation.                                         |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 
-### Configuring a database
+## Configuring an external database
 
-You can use the Spring Boot datasource configuration properties to configure the
-connection details for the PostgreSQL database that you provide. The most
-commonly used properties are:
+If you disable the embedded sidecar (`ontoserver.deployment.db.enabled: false`), you must supply the following in `ontoserver.config`:
 
-- `spring.datasource.url`
-- `spring.datasource.username`
-- `spring.datasource.password`
+```yaml
+spring.datasource.url: "jdbc:postgresql://<host>:<port>/<db>"
+spring.datasource.username: "<user>"
+spring.datasource.password: "<password>"
+```
 
-See [Spring Boot documentation - Data source configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data.sql.datasource.configuration)
-for more information.
+See the [Spring Boot DataSource configuration guide](https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data.sql.datasource.configuration).
 
-### Customization
+## Customization
 
-Ontoserver can be configured to serve up custom CSS and logo files under the 
-`/fhir/.well-known` path. This is used to customize the appearance of client 
-applications such as [Shrimp](https://ontoserver.csiro.au/shrimp).
-
-There are the three files that can be customized:
-
-- `logo.png` - A logo that is used to advertise the Ontoserver application 
-  itself.
-- `organisation_logo.png` - A logo that is used to advertise the organization 
-  that is associated with the Ontoserver instance.
-- `organisation.css` - A CSS file with styling overrides that can be used to 
- customize the appearance of the client application.
-
-You need to create a ConfigMap that contains these files, and then pass the name 
-of the ConfigMap to the `ontoserver.customization` value. An example of how to 
-create the ConfigMap using `kubectl` is shown below:
+To override the default CSS and logos under `/fhir/.well-known`, create a `ConfigMap`:
 
 ```bash
 kubectl create configmap ontoserver-customization \
@@ -69,8 +85,17 @@ kubectl create configmap ontoserver-customization \
   --from-file=organisation.css
 ```
 
-See [Kubernetes documentation - Configure a pod to use a ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) 
-for more information.
+Then set:
 
-Copyright © 2023, Commonwealth Scientific and Industrial Research Organisation
-(CSIRO) ABN 41 687 119 230. All rights reserved.
+```yaml
+ontoserver.customization: "ontoserver-customization"
+```
+
+## Gateway API vs Ingress
+
+* **Gateway API** (default when `ontoserver.gateway.enabled: true`): requires a compatible GatewayClass (e.g. Envoy) and will create `Gateway`, `HTTPRoute`, and optionally `Issuer` resources.
+* **Ingress** (when `ontoserver.ingress.enabled: true`): creates a standard `networking.k8s.io/v1` Ingress with optional TLS via cert-manager.
+
+---
+
+Copyright © 2025 Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230. All rights reserved.

@@ -4,9 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ .Release.Name }}-pdb
 spec:
+  {{- if and (lt (int .Values.ontoserver.deployment.podDisruptionBudget.maxUnavailable) 1) (lt (int .Values.ontoserver.deployment.podDisruptionBudget.minAvailable) 1)}}
+    {{- fail "ontoserver.deployment.podDisruptionBudget.maxUnavailable or ontoserver.deployment.podDisruptionBudget.minAvailable should be ≥ 1" }}
+  {{- end }}
   {{- if .Values.ontoserver.deployment.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.ontoserver.deployment.podDisruptionBudget.minAvailable }}
-  {{- else if .Values.pdb.maxUnavailable }}
+  {{- else if .Values.ontoserver.deployment.podDisruptionBudget.maxUnavailable }}
   maxUnavailable: {{ .Values.ontoserver.deployment.podDisruptionBudget.maxUnavailable }}
   {{- end }}
   {{- if .Values.ontoserver.deployment.podDisruptionBudget.unhealthyPodEvictionPolicy }}

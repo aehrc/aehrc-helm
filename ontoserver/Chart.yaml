@@ -1,6 +1,6 @@
 apiVersion: v2
-name: ontoserver-helm
-description: Ontoserver FHIR terminology server helm chart
+name: ontoserver-all-in-one
+description: Ontoserver FHIR terminology server helm chart with various deployment configurations
 type: application
 version: 1.0.0
 dependencies:
