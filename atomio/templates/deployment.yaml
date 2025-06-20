@@ -3,10 +3,12 @@ apiVersion: apps/v1
 metadata:
   name: {{ .Release.Name }}-atomio-deployment
 spec:
-  {{- if and .Values.atomio.persistence.enabled (gt (int .Values.atomio.replicas) 1) }}
-  {{- fail "persistence.enabled requires replicaCount ≤ 1" }}
+  {{- if and .Values.atomio.persistence.enabled (gt (int .Values.atomio.deployment.replicas) 1) }}
+  {{- fail "persistence.enabled requires atomio.deployment.replicas ≤ 1" }}
   {{- end }}
-  replicas: {{ .Values.atomio.replicas }}
+  replicas: {{ .Values.atomio.deployment.replicas }}
+  strategy:
+    type: {{ .Values.atomio.deployment.strategy }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-atomio
