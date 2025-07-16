@@ -1,0 +1,92 @@
+ontocloak:
+  # image: [Docker image repository]
+  # hostName: [host name]
+  realmName: ontocloak-realm # realmName must be url safe
+  timeZone: Australia/Brisbane
+  postgresTag: 12.2
+  persistence:
+    enabled: false
+    # diskName: [Azure Disk name]
+    # diskUri: [Azure Disk URI]
+  migration:
+    enabled: false
+    strategy: IGNORE_EXISTING
+  authoringServer:
+    base: [authoring server base URL]
+    fhir: [authoring server FHIR endpoint]
+  productionServer:
+    base: [production server base URL]
+    fhir: [production server FHIR endpoint]
+  syndicationServer:
+    base: [syndication server base URL]
+  clientSecrets:
+    releasePromotion: password
+    shrimp: password
+    syndicationRead: password
+    indexSyndication: password
+    bundleImport: password
+    ontoUi: password
+  database:
+    external: false
+  #  host: [host name of external database]
+    database: authorisation
+    user: authorisation
+    password: password
+    deployment:
+      strategy: RollingUpdate
+  admin:
+    user: admin
+    password: password
+  config:
+    ontocloak.action.agreement.enduser.version: "1.0"
+    ontocloak.action.agreement.enduser.title: Acme End User Agreement v1.0
+    ontocloak.action.agreement.enduser.group: End users
+    ontocloak.action.agreement.enduser.html_text: example
+    ontocloak.action.agreement.customer.version: "1.0"
+    ontocloak.action.agreement.customer.title: Acme Customer Agreement v1.0
+    ontocloak.action.agreement.customer.group: Customers
+    ontocloak.action.agreement.customer.html_text: example
+  resources:
+    cpu: 500m
+    memory: 1Gi
+  tolerations: false
+  highPriority: false
+
+certmanager:
+  enabled: true
+
+nginx-ingress:
+  controller:
+    enableSnippets: true
+    enableCertManager: true
+    ingressClassResource:
+      name: ontocloak-nginx
+      controllerValue: 'k8s.io/ontocloak-nginx'
+      enabled: true
+    service:
+      annotations:
+        service.beta.kubernetes.io/azure-dns-label-name: ontocloak
+    ingressClass: 'ontocloak-nginx'
+    ingressClassByName: true
+
+ingress:
+  #class: azure/application-gateway
+  #class: alb
+  class: ontocloak-nginx
+  nginx:
+    enabled: true
+    sslRedirect: false
+  appgw:
+    # Change this to actual values if using Application Gateway Ingress Controller
+    # sslcertificate: "name-of-appgw-installed-certificate"
+    requesttimeout: 60
+    className: azure-application-gateway
+  alb:
+    # loadBalancerGroup: ontoserver
+    # Change this to actual values if using ALB Ingress controller
+    # certificateArn: arn:aws:acm:location:tenancy:certificate/id
+
+repoSecret:
+  enabled: false
+  #name: [reposecret]
+  #dockerconfigjson: [base64 configjson]

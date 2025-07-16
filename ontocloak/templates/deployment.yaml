@@ -1,0 +1,203 @@
+{{ if and .Values.ontocloak.persistence.enabled .Values.ontocloak.database.external }}
+  {{ fail "Cannot have both local persistence and external database in use - use one or the other" }}
+{{ end }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-ontocloak-deployment
+  annotations:
+    checksum/config: {{ tpl (.Files.Get "configuration/realm.json") . | sha256sum }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-ontocloak
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-ontocloak
+    spec:
+      {{- if $.Values.repoSecret.enabled }}
+      imagePullSecrets:
+      - name:  {{ $.Values.repoSecret.name }}
+      {{- end }}    
+      containers:
+        - name: {{ .Release.Name }}-ontocloak
+          image: {{ required "An ontocloak.image value is required" .Values.ontocloak.image }}
+          imagePullPolicy: Always
+          ports:
+           - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /auth
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 5
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: {{ .Values.ontocloak.resources.cpu }}
+              memory: {{ .Values.ontocloak.resources.memory }}
+          args:
+            - start
+            {{- if .Values.ontocloak.migration.enabled }}
+            - --import-realm
+            {{- end }}
+            - --hostname={{ .Values.ontocloak.hostName }}
+            - --proxy edge
+            - --optimized
+          env:
+            - name: TZ
+              value: {{ .Values.ontocloak.timeZone }}
+            - name: KC_DB_URL_HOST
+            {{ if .Values.ontocloak.database.external }}
+              value: {{ .Values.ontocloak.database.host }}
+            {{ else }}
+              value: {{ .Release.Name }}-ontocloak-db-service
+            {{ end }}
+            - name: KC_DB_URL_DATABASE
+              value: {{ .Values.ontocloak.database.database }}
+            - name: KC_DB_SCHEMA
+              value: public
+            - name: KC_DB_USERNAME
+              value: {{ .Values.ontocloak.database.user }}
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-db-password
+                  key: password
+            - name: KEYCLOAK_ADMIN
+              value: {{ .Values.ontocloak.admin.user }}
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-keycloak-password
+                  key: password
+          volumeMounts:
+            - name: {{ .Release.Name }}-ontocloak-realm-config
+              mountPath: /opt/keycloak/data/import
+            - name: {{ .Release.Name }}-ontocloak-properties
+              mountPath: /opt/keycloak/conf/agreements.properties
+              subPath: ontocloak.properties
+            {{- if .Values.ontocloak.customisation }}
+            - name: {{ .Release.Name }}-ontocloak-admin-customisation
+              mountPath: /opt/keycloak/themes/ontocloak/admin/resources/img/ontoserver-logo.png
+              subPath:  ontoserver-logo.png
+            - name: {{ .Release.Name }}-ontocloak-login-customisation
+              mountPath: /opt/keycloak/themes/ontocloak/login
+            {{- end}}
+      {{- if .Values.ontocloak.highPriority }}
+      priorityClassName: high-priority
+      {{- end }}
+      volumes:
+        - name: {{ .Release.Name }}-ontocloak-realm-config
+          configMap:
+            name: {{ .Release.Name }}-ontocloak-realm-config
+        - name: {{ .Release.Name }}-ontocloak-properties
+          configMap:
+            name: {{ .Release.Name }}-ontocloak-properties
+      {{- if .Values.ontocloak.tolerations }}
+      tolerations:
+        {{- range $index, $element := .Values.ontocloak.tolerations }}
+        - key: {{ $element.key }}
+          operator: {{ $element.operator }}
+          value: {{ $element.value }}
+          effect: {{ $element.effect }}
+        {{- end }}
+      {{- end }}
+{{ if not .Values.ontocloak.database.external }}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-ontocloak-db-deployment
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-ontocloak-db
+  strategy:
+    type: {{ .Values.ontocloak.database.deployment.strategy }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-ontocloak-db
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-ontocloak-db
+          image: postgres:{{ .Values.ontocloak.postgresTag }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: LANG
+              value: en_US.UTF-8
+            - name: LANGUAGE
+              value: en_US:en
+            - name: LC_ALL
+              value: en_US.UTF-8
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
+            - name: TZ
+              value: {{ .Values.ontocloak.timeZone }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            {{ if .Values.ontocloak.persistence.enabled }}
+            - name: {{ .Release.Name }}-ontocloak-db-cluster
+              mountPath: /var/lib/postgresql/data
+            {{ end }}
+            - name: {{ .Release.Name }}-ontocloak-db-init
+              mountPath: /docker-entrypoint-initdb.d
+      {{- if .Values.ontocloak.highPriority }}
+      priorityClassName: high-priority
+      {{- end }}
+      volumes:
+        {{ if .Values.ontocloak.persistence.enabled }}
+        - name: {{ .Release.Name }}-ontocloak-db-cluster
+          azureDisk:
+            kind: Managed
+            diskName: {{ required "A ontocloak.persistence.diskName value is required" .Values.ontocloak.persistence.diskName }}
+            diskURI: {{ required "A ontocloak.persistence.diskUri value is required" .Values.ontocloak.persistence.diskUri }}
+        {{ end }}
+        - name: {{ .Release.Name }}-ontocloak-db-init
+          configMap:
+            name: {{ .Release.Name }}-ontocloak-db-init
+      {{- if .Values.ontocloak.tolerations }}
+      tolerations:
+        {{- range $index, $element := .Values.ontocloak.tolerations }}
+        - key: {{ $element.key }}
+          operator: {{ $element.operator }}
+          value: {{ $element.value }}
+          effect: {{ $element.effect }}
+        {{- end }}
+      {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ontocloak-db-init
+data:
+  init-db.sh: {{ tpl (.Files.Get "configuration/init-db.sh") . | quote }}
+{{ end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-ontocloak-db-password
+data:
+  password: {{ .Values.ontocloak.database.password | b64enc }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-ontocloak-keycloak-password
+data:
+  password: {{ .Values.ontocloak.admin.password | b64enc }}
+---
+{{- if .Values.repoSecret.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Values.repoSecret.name }}
+data:
+  .dockerconfigjson:  {{ $.Values.repoSecret.dockerconfigjson }}
+type: kubernetes.io/dockerconfigjson
+{{- end }}

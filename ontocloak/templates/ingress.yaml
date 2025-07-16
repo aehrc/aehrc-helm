@@ -1,0 +1,58 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ .Release.Name }}-ontocloak-ingress
+  annotations:
+    {{- if .Values.certmanager.enabled }}
+    cert-manager.io/cluster-issuer: letsencrypt
+    {{- if contains "nginx" .Values.ingress.class }}
+    cert-manager.io/issue-temporary-certificate: "true" # temporary cert required for nginx to be able to reload
+    acme.cert-manager.io/http01-edit-in-place: "true" # important to merge with existing ingress resource into a single nginx config file
+    {{- end }}
+    {{- end }}
+    {{- if contains "nginx" .Values.ingress.class }}
+    nginx.org/proxy-buffer-size: "8k"
+    nginx.org/redirect-to-https: "{{ .Values.ingress.nginx.sslRedirect }}"
+    ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.nginx.sslRedirect }}"
+    {{- end}}
+    {{- if eq .Values.ingress.class "azure/application-gateway" }}
+    cert-manager.io/acme-challenge-type: http01
+    appgw.ingress.kubernetes.io/use-private-ip: "false"
+    appgw.ingress.kubernetes.io/health-probe-path: "/auth"
+    appgw.ingress.kubernetes.io/request-timeout: "{{ .Values.ingress.appgw.requesttimeout }}"
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    {{- if .Values.ingress.appgw.sslcertificate }}
+    appgw.ingress.kubernetes.io/appgw-ssl-certificate: {{ .Values.ingress.appgw.sslcertificate }}
+    {{- end }}
+    {{- end }}
+    {{- if eq .Values.ingress.class "alb" }}
+    alb.ingress.kubernetes.io/group.name: {{ .Values.ingress.alb.loadBalancerGroup | quote }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.alb.certificateArn | quote }}
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/target-type: ip
+    {{- end }}
+spec:
+  {{- if eq .Values.ingress.class "azure/application-gateway" }}
+  ingressClassName:  {{ .Values.ingress.appgw.className }}
+  {{- else }}
+  ingressClassName:  {{ .Values.ingress.class }}
+  {{ end }}
+  {{- if not .Values.ingress.appgw.sslcertificate }}
+  tls:
+    - hosts:
+        - {{ required "An ontocloak.hostName value is required" .Values.ontocloak.hostName }}
+      secretName: ontocloak-tls-secret
+  {{- end }}
+  rules:
+    - host: {{ .Values.ontocloak.hostName }}
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-ontocloak-service
+                port:
+                  number: 80
+
