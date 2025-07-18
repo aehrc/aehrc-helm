@@ -9,7 +9,7 @@ spec:
       targetPort: 8080
   selector:
     app: {{ .Release.Name }}-ontocloak
-{{ if not .Values.ontocloak.database.external }}
+{{ if not .Values.ontocloak.deployment.db.external }}
 ---
 kind: Service
 apiVersion: v1

@@ -1,41 +1,126 @@
 ontocloak:
-  # image: [Docker image repository]
-  # hostName: [host name]
-  realmName: ontocloak-realm # realmName must be url safe
+  deployment:
+    ## @param ontocloak.deployment.kind                Kind of controller (Deployment or StatefulSet)
+    kind: Deployment
+    ## @param ontocloak.deployment.annotations         Controller manifest annotations
+    annotations: {}
+    ## @param ontocloak.deployment.labels.             Controller manifest labels
+    labels: {}
+    ## @param ontocloak.deployment.podAnnotations      Ontocloak pod annotations
+    podAnnotations: {}
+    ## @param ontocloak.deployment.podLabels.          Ontocloak pod labels
+    podLabels: {}
+    ## @param ontocloak.deployment.image               Container image for Ontocloak
+    image: quay.io/aehrc/ontocloak:4
+    ## @param ontocloak.deployment.imagePullPolicy     Image pull policy
+    imagePullPolicy: Always
+    ## @param ontocloak.deployment.imagePullSecrets    Secrets for pulling image
+    imagePullSecrets: []
+    ## @param ontocloak.deployment.replicas            Number of replicas (max 1, set 0 to disable deployment)
+    replicas: 1
+    ## @param ontocloak.deployment.deploymentStrategy  K8s update strategy for Ontocloak Pod
+    deploymentStrategy: RollingUpdate
+    resources:
+      ## @param ontocloak.deployment.resources.cpu     CPU request for Ontocloak Pod (in millicores)
+      cpu: 500m
+      ## @param ontocloak.deployment.resources.memory  Memory request for Ontocloak Pod
+      memory: 1Gi
+    ## @param ontocloak.deployment.tolerations         Enable Pod tolerations
+    tolerations: []
+    db:
+      ## @param ontocloak.deployment.db.user                DB user (provided at runtime)
+      user: username
+      ## @param ontocloak.deployment.db.password            DB password (provided at runtime)
+      password: password
+      ## @param ontocloak.deployment.db.database Database name
+      database: ontocloak
+      ## @param ontocloak.deployment.db.external.enabled    Enable external Postgres instead of provided
+      external:
+        enabled: false
+        ## @param ontocloak.deployment.db.external.hostName External DB host name
+        hostName:
+      provided:
+        ## @param ontocloak.deployment.db.provided.deploymentStrategy  Update strategy for provided Postgres Pod
+        deploymentStrategy: RollingUpdate
+        ## @param ontocloak.deployment.db.provided.postgresVersion     Postgres version for provided database
+        postgresVersion: 12
+        resources:
+          ## @param ontocloak.deployment.db.provided.resources.cpu     CPU request for Ontocloak Pod (in millicores)
+          cpu: 500m
+          ## @param ontocloak.deployment.db.provided.resources.memory  Memory request for Ontocloak Pod
+          memory: 1Gi
+        ## @param ontocloak.deployment.db.provided.tolerations         Enable Pod tolerations
+        tolerations: []
+        persistence:
+          ## @param ontocloak.deployment.persistence.enabledForDeployment  Enable PVC for deployment
+          enabledForDeployment: false
+          files:
+            diskSize: 10Gi
+            existingVolume:
+              ## @param ontocloak.deployment.persistence.dbfiles.existingVolume.enabled  Bind to existing PV
+              enabled: false
+              ## @param ontocloak.deployment.persistence.dbfiles.existingVolume.name     Name of existing PV
+              name: ""
+            storageClass:
+              ## @param ontocloak.deployment.persistence.dbfiles.storageClass.name       StorageClass name
+              name: default
+              provided:
+                ## @param ontocloak.deployment.persistence.dbfiles.storageClass.provided.enabled               Use provided StorageClass
+                enabled: false
+                ## @param ontocloak.deployment.persistence.dbfiles.storageClass.provided.storageProvisioner    CSI driver name
+                storageProvisioner: disk.csi.azure.com
+                ## @param ontocloak.deployment.persistence.dbfiles.storageClass.provided.reclaimPolicy         Reclaim policy (Retain/Delete)
+                reclaimPolicy: Retain
+                ## @param ontocloak.deployment.persistence.dbfiles.storageClass.provided.storageParameters     Storage class parameters
+                storageParameters:
+                  skuName: Premium_LRS
+                  kind: Managed
+                ## @param ontocloak.deployment.persistence.dbfiles.storageClass.provided.allowVolumeExpansion  Enable volume expansion
+                allowVolumeExpansion: true
+  ## @param ontocloak.serverName                          Server hostname for Ontocloak service
+  serverName: localhost
+  ## @param ontocloak.hostNames                           List of hostnames for ingress/gateway
+  hostNames:
+    - localhost
+  ## @param ontocloak.timeZone                            Time zone for realm (e.g., Australia/Brisbane)
   timeZone: Australia/Brisbane
-  postgresTag: 12.2
-  persistence:
-    enabled: false
-    # diskName: [Azure Disk name]
-    # diskUri: [Azure Disk URI]
+  #########################################################################################################################################
+  # Use this section to set up a default realm for the first start. After first startup you can set ontocloak.migration.skipCheck to true #
+  #########################################################################################################################################
   migration:
-    enabled: false
-    strategy: IGNORE_EXISTING
-  authoringServer:
-    base: [authoring server base URL]
-    fhir: [authoring server FHIR endpoint]
-  productionServer:
-    base: [production server base URL]
-    fhir: [production server FHIR endpoint]
-  syndicationServer:
-    base: [syndication server base URL]
-  clientSecrets:
-    releasePromotion: password
-    shrimp: password
-    syndicationRead: password
-    indexSyndication: password
-    bundleImport: password
-    ontoUi: password
-  database:
-    external: false
-  #  host: [host name of external database]
-    database: authorisation
-    user: authorisation
-    password: password
-    deployment:
-      strategy: RollingUpdate
+    skipCheck: false
+    ## @param ontocloak.migration.realmName                           Keycloak realm name (URL-safe)
+    realmName: ontocloak-realm
+    authoringServer:
+      ## @param ontocloak.migration.authoringServer.base            Base URL for authoring server
+      base:
+      ## @param ontocloak.migration.authoringServer.fhir            FHIR API endpoint for authoring server
+      fhir:
+    productionServer:
+      ## @param ontocloak.migration.productionServer.base           Base URL for production server
+      base: 
+      ## @param ontocloak.migration.productionServer.fhir           FHIR API endpoint for production server
+      fhir:
+    syndicationServer:
+      ## @param ontocloak.migration.syndicationServer.base          Base URL for syndication server
+      base:
+    clientSecrets:
+      ## @param ontocloak.migration.clientSecrets.releasePromotion  Secret for release promotion client - provide it on command line, do not commit to git
+      releasePromotion: password
+      ## @param ontocloak.migration.clientSecrets.shrimp            Secret for shrimp client - provide it on command line, do not commit to git
+      shrimp: password
+      ## @param ontocloak.migration.clientSecrets.syndicationRead   Secret for syndication read client - provide it on command line, do not commit to git
+      syndicationRead: password
+      ## @param ontocloak.migration.clientSecrets.indexSyndication  Secret for index syndication client - provide it on command line, do not commit to git
+      indexSyndication: password
+      ## @param ontocloak.migration.clientSecrets.bundleImport      Secret for bundle import client - provide it on command line, do not commit to git
+      bundleImport: password
+      ## @param ontocloak.migration.clientSecrets.ontoUi            Secret for OntoUI client - provide it on command line, do not commit to git
+      ontoUi: password
   admin:
+    ## @param ontocloak.admin.user                        Admin username - provide it on command line, do not commit to git
     user: admin
+    ## @param ontocloak.admin.password                    Admin password - provide it on command line, do not commit to git
     password: password
   config:
     ontocloak.action.agreement.enduser.version: "1.0"
@@ -46,47 +131,49 @@ ontocloak:
     ontocloak.action.agreement.customer.title: Acme Customer Agreement v1.0
     ontocloak.action.agreement.customer.group: Customers
     ontocloak.action.agreement.customer.html_text: example
-  resources:
-    cpu: 500m
-    memory: 1Gi
-  tolerations: false
-  highPriority: false
+  tls:
+    ## @param ontocloak.tls.enabled                       Enable TLS Termination
+    enabled: true
+    ## @param ontocloak.tls.certRef                       Reference to TLS certificate secret
+    certRef:
+  certmanager:
+    ## @param ontocloak.certmanager.enabled               Enable cert-manager
+    enabled: true
+    ## @param ontocloak.certmanager.clusterIssuerName     ClusterIssuer name or prefix for Geteway's Issuer
+    clusterIssuerName: letsencrypt
+    ## @param ontocloak.certmanager.email                 Notification email for ACME
+    email: noreply@example.com
+  gateway:
+    ## @param ontocloak.gateway.enabled                   Enable Gateway API
+    enabled: true
+    ## @param ontocloak.gateway.listenerPortSecure        Secure listener port -  Depends on the gateway class - Traefik is 8443
+    listenerPortSecure: 443
+    ## @param ontocloak.gateway.annotations               Gateway annotations
+    annotations: {}
+    ## @param ontocloak.gateway.infrastructureAnnotations Infrastructure annotations
+    infrastructureAnnotations: {}
+    ## @param ontocloak.gateway.className                 GatewayClass name
+    className: envoy-gateway-class
+    ## @param ontocloak.gateway.requestTimeout            Request timeout duration
+    requestTimeout: 5s
+  ingress:
+    ## @param ontocloak.ingress.enabled                   Enable ingress for Ontocloak
+    enabled: false
+    ## @param ontocloak.ingress.className                 Ingress class name (e.g., nginx, alb)
+    className: ontocloak-nginx
+    #className: azure/application-gateway
+    #className: alb
+    annotations: {}
 
-certmanager:
-  enabled: true
-
+# F5 NGINX Ingress Controller Configuration
 nginx-ingress:
+  ## @param nginx-ingress.enabled                         Enable F5 nginx-ingress-controller
+  enabled: false
   controller:
     enableSnippets: true
     enableCertManager: true
-    ingressClassResource:
+    # Create an ingress class with its own LoadBalancer
+    ingressClass:
+      create: true
       name: ontocloak-nginx
-      controllerValue: 'k8s.io/ontocloak-nginx'
-      enabled: true
-    service:
-      annotations:
-        service.beta.kubernetes.io/azure-dns-label-name: ontocloak
-    ingressClass: 'ontocloak-nginx'
     ingressClassByName: true
-
-ingress:
-  #class: azure/application-gateway
-  #class: alb
-  class: ontocloak-nginx
-  nginx:
-    enabled: true
-    sslRedirect: false
-  appgw:
-    # Change this to actual values if using Application Gateway Ingress Controller
-    # sslcertificate: "name-of-appgw-installed-certificate"
-    requesttimeout: 60
-    className: azure-application-gateway
-  alb:
-    # loadBalancerGroup: ontoserver
-    # Change this to actual values if using ALB Ingress controller
-    # certificateArn: arn:aws:acm:location:tenancy:certificate/id
-
-repoSecret:
-  enabled: false
-  #name: [reposecret]
-  #dockerconfigjson: [base64 configjson]

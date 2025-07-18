@@ -1,6 +1,6 @@
 {
-  "id" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
-  "realm" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+  "id" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
+  "realm" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
   "notBefore" : 0,
   "revokeRefreshToken" : false,
   "refreshTokenMaxReuse" : 0,
@@ -49,7 +49,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "cfeca3f9-f7d3-4868-89ce-19324b3f7b59",
@@ -64,7 +64,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id": "f8b9b681-3d6c-4e2c-b1eb-136617cbee8c",
@@ -83,7 +83,7 @@
         }
       },
       "clientRole": false,
-      "containerId": "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId": "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes": {}
     }, {
       "id" : "c8c641bc-1b67-4a18-981b-4d8d3b86585e",
@@ -97,7 +97,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "f5f37664-6781-4049-a3fa-dd27d255be20",
@@ -112,7 +112,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "d46914e8-eaaa-4354-bc1e-472dc9d40079",
@@ -126,7 +126,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "de729cab-3eb9-483a-a778-e1b042904f62",
@@ -134,7 +134,7 @@
       "description" : "${role_uma_authorization}",
       "composite" : false,
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "bfdf9a23-79c0-4621-b166-49be53cb1a9b",
@@ -147,7 +147,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "e485f484-ae8a-4318-862a-5a13e8631ad8",
@@ -155,7 +155,7 @@
       "description" : "Write access to ALL communities",
       "composite" : false,
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "5abac916-9d5e-477a-b9f7-93e539b37e92",
@@ -168,7 +168,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "9e9c3092-6248-42eb-8341-be60f5c92f12",
@@ -181,7 +181,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "b4b396d0-b803-4928-abc8-aaa4a1cdfb04",
@@ -194,7 +194,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "d19e6c3d-c1af-4649-9e30-2ff434af68f2",
@@ -205,7 +205,7 @@
         "realm" : [ "Community owner" ]
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "94bb1286-a87b-4dad-b157-42b14588d668",
@@ -216,7 +216,7 @@
         "realm" : [ "PERM_WRITE", "PERM_READ" ]
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "da45871c-4c99-49e0-8129-f503e9c3af0f",
@@ -224,7 +224,7 @@
       "description" : "${role_offline-access}",
       "composite" : false,
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "8d0ca066-adef-4cf0-89ce-687ffb3001b1",
@@ -232,7 +232,7 @@
       "description" : "Read access to ALL communities",
       "composite" : false,
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     }, {
       "id" : "9d18bfcc-3f5c-46fc-8758-514644534aab",
@@ -246,7 +246,7 @@
         }
       },
       "clientRole" : false,
-      "containerId" : "{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}",
+      "containerId" : "{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}",
       "attributes" : { }
     } ],
     "client" : {
@@ -818,14 +818,14 @@
     "clientId" : "account",
     "name" : "${client_account}",
     "rootUrl" : "${authBaseUrl}",
-    "baseUrl" : "/realms/{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}/account/",
+    "baseUrl" : "/realms/{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}/account/",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "**********",
     "defaultRoles" : [ "view-profile", "manage-account" ],
-    "redirectUris" : [ "/realms/{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}/account/*" ],
+    "redirectUris" : [ "/realms/{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}/account/*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -848,13 +848,13 @@
     "clientId" : "account-console",
     "name" : "${client_account-console}",
     "rootUrl" : "${authBaseUrl}",
-    "baseUrl" : "/realms/{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}/account/",
+    "baseUrl" : "/realms/{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}/account/",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "**********",
-    "redirectUris" : [ "/realms/{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}/account/*" ],
+    "redirectUris" : [ "/realms/{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}/account/*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -912,15 +912,15 @@
   }, {
     "id" : "a8d4bde6-2431-402a-aeed-91fe628c6cfb",
     "clientId" : "authoring-server",
-    "rootUrl" : "{{ required `An ontocloak.authoringServer.base value is required` .Values.ontocloak.authoringServer.base }}/",
+    "rootUrl" : "{{ required 'An ontocloak.migration.authoringServer.base value is required' .Values.ontocloak.migration.authoringServer.base }}/",
     "adminUrl" : "",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "**********",
-    "redirectUris" : [ "{{ .Values.ontocloak.authoringServer.base }}/*" ],
-    "webOrigins" : [ "{{ .Values.ontocloak.authoringServer.base }}" ],
+    "redirectUris" : [ "{{ .Values.ontocloak.migration.authoringServer.base }}/*" ],
+    "webOrigins" : [ "{{ .Values.ontocloak.migration.authoringServer.base }}" ],
     "notBefore" : 0,
     "bearerOnly" : true,
     "consentRequired" : false,
@@ -987,7 +987,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "{{ .Values.ontocloak.clientSecrets.bundleImport }}",
+    "secret" : "{{ .Values.ontocloak.migration.clientSecrets.bundleImport }}",
     "redirectUris" : [ ],
     "webOrigins" : [ ],
     "notBefore" : 0,
@@ -1072,7 +1072,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "{{ .Values.ontocloak.clientSecrets.indexSyndication }}",
+    "secret" : "{{ .Values.ontocloak.migration.clientSecrets.indexSyndication }}",
     "redirectUris" : [ ],
     "webOrigins" : [ ],
     "notBefore" : 0,
@@ -1157,7 +1157,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "{{ .Values.ontocloak.clientSecrets.ontoUi }}",
+    "secret" : "{{ .Values.ontocloak.migration.clientSecrets.ontoUi }}",
     "redirectUris" : [ "https://ontoserver.csiro.au/ui/*" ],
     "webOrigins" : [ "https://ontoserver.csiro.au" ],
     "notBefore" : 0,
@@ -1179,15 +1179,15 @@
   }, {
     "id" : "c2097014-30df-405c-8faa-6ddf32c02bca",
     "clientId" : "production-server",
-    "rootUrl" : "{{ required `An ontocloak.productionServer.base value is required` .Values.ontocloak.productionServer.base }}/",
+    "rootUrl" : "{{ required 'An ontocloak.migration.productionServer.base value is required' .Values.ontocloak.migration.productionServer.base }}/",
     "adminUrl" : "",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "**********",
-    "redirectUris" : [ "{{ .Values.ontocloak.productionServer.base }}/*" ],
-    "webOrigins" : [ "{{ .Values.ontocloak.productionServer.base }}" ],
+    "redirectUris" : [ "{{ .Values.ontocloak.migration.productionServer.base }}/*" ],
+    "webOrigins" : [ "{{ .Values.ontocloak.migration.productionServer.base }}" ],
     "notBefore" : 0,
     "bearerOnly" : true,
     "consentRequired" : false,
@@ -1600,7 +1600,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "{{ .Values.ontocloak.clientSecrets.releasePromotion }}",
+    "secret" : "{{ .Values.ontocloak.migration.clientSecrets.releasePromotion }}",
     "redirectUris" : [ ],
     "webOrigins" : [ ],
     "notBefore" : 0,
@@ -1681,13 +1681,13 @@
     "clientId" : "security-admin-console",
     "name" : "${client_security-admin-console}",
     "rootUrl" : "${authAdminUrl}",
-    "baseUrl" : "/admin/{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}/console/",
+    "baseUrl" : "/admin/{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}/console/",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "**********",
-    "redirectUris" : [ "/admin/{{ required "An ontocloak.realmName value is required" .Values.ontocloak.realmName }}/console/*" ],
+    "redirectUris" : [ "/admin/{{ required 'An ontocloak.migration.realmName value is required' .Values.ontocloak.migration.realmName }}/console/*" ],
     "webOrigins" : [ "+" ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -1733,7 +1733,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "{{ .Values.ontocloak.clientSecrets.shrimp }}",
+    "secret" : "{{ .Values.ontocloak.migration.clientSecrets.shrimp }}",
     "redirectUris" : [ "https://ontoserver.csiro.au/shrimp/*", "https://ontoserver.csiro.au/shrimp/ecl" ],
     "webOrigins" : [ "https://ontoserver.csiro.au", "https://ontoserver-nzcts-dev.australiaeast.cloudapp.azure.com", "https://ontoserver-nzcts.australiaeast.cloudapp.azure.com" ],
     "notBefore" : 0,
@@ -1819,7 +1819,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "{{ .Values.ontocloak.clientSecrets.syndicationRead }}",
+    "secret" : "{{ .Values.ontocloak.migration.clientSecrets.syndicationRead }}",
     "redirectUris" : [ ],
     "webOrigins" : [ ],
     "notBefore" : 0,
@@ -2365,7 +2365,7 @@
       "protocolMapper" : "oidc-usermodel-client-role-mapper",
       "consentRequired" : false,
       "config" : {
-        "usermodel.clientRoleMapping.rolePrefix" : "{{ .Values.ontocloak.authoringServer.base }}{{ required `An ontocloak.authoringServer.fhir value is required` .Values.ontocloak.authoringServer.fhir }}",
+        "usermodel.clientRoleMapping.rolePrefix" : "{{ .Values.ontocloak.migration.authoringServer.base }}{{ required 'An ontocloak.migration.authoringServer.fhir value is required' .Values.ontocloak.migration.authoringServer.fhir }}",
         "multivalued" : "true",
         "userinfo.token.claim" : "false",
         "id.token.claim" : "false",
@@ -2381,7 +2381,7 @@
       "protocolMapper" : "oidc-audience-mapper",
       "consentRequired" : false,
       "config" : {
-        "included.custom.audience" : "{{ .Values.ontocloak.authoringServer.base }}{{ .Values.ontocloak.authoringServer.fhir }}",
+        "included.custom.audience" : "{{ .Values.ontocloak.migration.authoringServer.base }}{{ .Values.ontocloak.migration.authoringServer.fhir }}",
         "id.token.claim" : "false",
         "access.token.claim" : "true",
         "userinfo.token.claim" : "false"
@@ -2403,7 +2403,7 @@
       "protocolMapper" : "oidc-usermodel-client-role-mapper",
       "consentRequired" : false,
       "config" : {
-        "usermodel.clientRoleMapping.rolePrefix" : "{{ .Values.ontocloak.productionServer.base }}{{ required `An ontocloak.productionServer.fhir value is required` .Values.ontocloak.productionServer.fhir }}",
+        "usermodel.clientRoleMapping.rolePrefix" : "{{ .Values.ontocloak.migration.productionServer.base }}{{ required 'An ontocloak.migration.productionServer.fhir value is required' .Values.ontocloak.migration.productionServer.fhir }}",
         "multivalued" : "true",
         "userinfo.token.claim" : "false",
         "id.token.claim" : "false",
@@ -2419,7 +2419,7 @@
       "protocolMapper" : "oidc-audience-mapper",
       "consentRequired" : false,
       "config" : {
-        "included.custom.audience" : "{{ .Values.ontocloak.productionServer.base }}{{ .Values.ontocloak.productionServer.fhir }}",
+        "included.custom.audience" : "{{ .Values.ontocloak.migration.productionServer.base }}{{ .Values.ontocloak.migration.productionServer.fhir }}",
         "id.token.claim" : "false",
         "access.token.claim" : "true",
         "userinfo.token.claim" : "false"
@@ -2530,7 +2530,7 @@
       "protocolMapper" : "oidc-audience-mapper",
       "consentRequired" : false,
       "config" : {
-        "included.client.audience" : "{{ required `An ontocloak.syndicationServer.base value is required` .Values.ontocloak.syndicationServer.base }}",
+        "included.client.audience" : "{{ required 'An ontocloak.migration.syndicationServer.base value is required' .Values.ontocloak.migration.syndicationServer.base }}",
         "id.token.claim" : "false",
         "access.token.claim" : "true",
         "userinfo.token.claim" : "false"
@@ -2542,7 +2542,7 @@
       "protocolMapper" : "oidc-usermodel-client-role-mapper",
       "consentRequired" : false,
       "config" : {
-        "usermodel.clientRoleMapping.rolePrefix" : "{{ .Values.ontocloak.syndicationServer.base }}",
+        "usermodel.clientRoleMapping.rolePrefix" : "{{ .Values.ontocloak.migration.syndicationServer.base }}",
         "multivalued" : "true",
         "userinfo.token.claim" : "false",
         "id.token.claim" : "false",

@@ -1,12 +1,15 @@
-{{ if and .Values.ontocloak.persistence.enabled .Values.ontocloak.database.external }}
-  {{ fail "Cannot have both local persistence and external database in use - use one or the other" }}
-{{ end }}
 kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: {{ .Release.Name }}-ontocloak-deployment
+  {{- with .Values.ontocloak.deployment.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.ontocloak.deployment.annotations }}
   annotations:
-    checksum/config: {{ tpl (.Files.Get "configuration/realm.json") . | sha256sum }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -15,14 +18,105 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-ontocloak
+        {{- with .Values.ontocloak.deployment.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.ontocloak.deployment.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
-      {{- if $.Values.repoSecret.enabled }}
-      imagePullSecrets:
-      - name:  {{ $.Values.repoSecret.name }}
-      {{- end }}    
+      {{- if $.Values.ontocloak.deployment.imagePullSecrets  }}
+      imagePullSecrets: {{ toJson .Values.ontocloak.deployment.imagePullSecrets }}
+      {{- end }}
+      {{- if not .Values.ontocloak.migration.skipCheck }}
+      initContainers:
+        # 1 – DB check
+        - name: db-check
+          image: postgres:{{ .Values.ontocloak.deployment.db.provided.postgresVersion }}
+          command: ["/bin/bash", "-c"]
+          env:
+            - name: TZ
+              value: {{ .Values.ontocloak.timeZone }}
+            - name: KC_REALM_NAME
+              value: {{ .Values.ontocloak.migration.realmName }}
+            - name: KC_DB_SCHEMA
+              value: public
+            - name: KC_DB_URL_HOST
+            {{ if .Values.ontocloak.deployment.db.external }}
+              value: {{ .Values.ontocloak.deployment.db.external.hostName }}
+            {{ else }}
+              value: {{ .Release.Name }}-ontocloak-db-service
+            {{ end }}
+            - name: KC_DB_URL_DATABASE
+              value: {{ .Values.ontocloak.deployment.db.database }}
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-db-secret
+                  key: username
+              value:
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-db-secret
+                  key: password
+          args:
+            - |
+              if PGPASSWORD="$KC_DB_PASSWORD" psql -h "$KC_DB_HOST" -U "$KC_DB_USERNAME" \
+                -d "$KC_DB_DATABASE" -tAc "SELECT 1 FROM $KC_DB_SCHEMA.realm WHERE name='${KC_REALM_NAME}' LIMIT 1;" | grep -q 1; then
+                echo "Realm exists – writing flag" && mkdir -p /work && touch /work/skip;
+              fi
+          volumeMounts:
+            - name: workdir
+              mountPath: /work
+        # 2 – Import if realm doesn't exist in DB
+        - name: realm-import
+          image: {{ .Values.ontocloak.deployment.image }}
+          env:
+            - name: TZ
+              value: {{ .Values.ontocloak.timeZone }}
+            - name: KC_DB_URL_HOST
+            {{ if .Values.ontocloak.deployment.db.external.enabled }}
+              value: {{ .Values.ontocloak.deployment.db.external.hostName }}
+            {{ else }}
+              value: {{ .Release.Name }}-ontocloak-db-service
+            {{ end }}
+            - name: KC_DB_URL_DATABASE
+              value: {{ .Values.ontocloak.deployment.db.database }}
+            - name: KC_DB_SCHEMA
+              value: public
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-db-secret
+                  key: username
+              value:
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-db-secret
+                  key: password
+            - name: KEYCLOAK_ADMIN
+              value: {{ .Values.ontocloak.admin.user }}
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-keycloak-password
+                  key: password                    
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              if [ -f /work/skip ]; then echo "Skipping import"; else kc.sh import --file=/opt/keycloak/data/import/realm.json --override; fi
+          volumeMounts:
+            - name: workdir
+              mountPath: /work
+            - name: {{ .Release.Name }}-ontocloak-realm-config
+              mountPath: /opt/keycloak/data/import
+      {{- end }}
       containers:
         - name: {{ .Release.Name }}-ontocloak
-          image: {{ required "An ontocloak.image value is required" .Values.ontocloak.image }}
+          image: {{ required "An ontocloak.image value is required" .Values.ontocloak.deployment.image }}
           imagePullPolicy: Always
           ports:
            - containerPort: 8080
@@ -35,35 +129,39 @@ spec:
             failureThreshold: 10
           resources:
             requests:
-              cpu: {{ .Values.ontocloak.resources.cpu }}
-              memory: {{ .Values.ontocloak.resources.memory }}
+              cpu: {{ .Values.ontocloak.deployment.resources.cpu }}
+              memory: {{ .Values.ontocloak.deployment.resources.memory }}
           args:
             - start
             {{- if .Values.ontocloak.migration.enabled }}
             - --import-realm
             {{- end }}
-            - --hostname={{ .Values.ontocloak.hostName }}
+            - --hostname={{ .Values.ontocloak.serverName }}
             - --proxy edge
             - --optimized
           env:
             - name: TZ
               value: {{ .Values.ontocloak.timeZone }}
             - name: KC_DB_URL_HOST
-            {{ if .Values.ontocloak.database.external }}
-              value: {{ .Values.ontocloak.database.host }}
+            {{ if .Values.ontocloak.deployment.db.external.enabled }}
+              value: {{ .Values.ontocloak.deployment.db.external.hostName }}
             {{ else }}
               value: {{ .Release.Name }}-ontocloak-db-service
             {{ end }}
             - name: KC_DB_URL_DATABASE
-              value: {{ .Values.ontocloak.database.database }}
+              value: {{ .Values.ontocloak.deployment.db.database }}
             - name: KC_DB_SCHEMA
               value: public
             - name: KC_DB_USERNAME
-              value: {{ .Values.ontocloak.database.user }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-ontocloak-db-secret
+                  key: username
+              value:
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-password
+                  name: {{ .Release.Name }}-ontocloak-db-secret
                   key: password
             - name: KEYCLOAK_ADMIN
               value: {{ .Values.ontocloak.admin.user }}
@@ -73,8 +171,6 @@ spec:
                   name: {{ .Release.Name }}-ontocloak-keycloak-password
                   key: password
           volumeMounts:
-            - name: {{ .Release.Name }}-ontocloak-realm-config
-              mountPath: /opt/keycloak/data/import
             - name: {{ .Release.Name }}-ontocloak-properties
               mountPath: /opt/keycloak/conf/agreements.properties
               subPath: ontocloak.properties
@@ -89,22 +185,20 @@ spec:
       priorityClassName: high-priority
       {{- end }}
       volumes:
+        {{- if not .Values.ontocloak.migration.skipCheck }}
         - name: {{ .Release.Name }}-ontocloak-realm-config
           configMap:
             name: {{ .Release.Name }}-ontocloak-realm-config
+        - name: workdir
+          emptyDir: {}
+        {{- end }}
         - name: {{ .Release.Name }}-ontocloak-properties
           configMap:
             name: {{ .Release.Name }}-ontocloak-properties
-      {{- if .Values.ontocloak.tolerations }}
-      tolerations:
-        {{- range $index, $element := .Values.ontocloak.tolerations }}
-        - key: {{ $element.key }}
-          operator: {{ $element.operator }}
-          value: {{ $element.value }}
-          effect: {{ $element.effect }}
-        {{- end }}
+      {{- if .Values.ontocloak.deployment.tolerations }}
+      tolerations: {{ toJson .Values.ontocloak.deployment.tolerations }}
       {{- end }}
-{{ if not .Values.ontocloak.database.external }}
+{{ if not .Values.ontocloak.deployment.db.external.enabled }}
 ---
 kind: Deployment
 apiVersion: apps/v1
@@ -115,7 +209,7 @@ spec:
     matchLabels:
       app: {{ .Release.Name }}-ontocloak-db
   strategy:
-    type: {{ .Values.ontocloak.database.deployment.strategy }}
+    type: {{ .Values.ontocloak.deployment.db.provided.deploymentStrategy }}
   template:
     metadata:
       labels:
@@ -123,7 +217,7 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-ontocloak-db
-          image: postgres:{{ .Values.ontocloak.postgresTag }}
+          image: postgres:{{ .Values.ontocloak.deployment.db.provided.postgresVersion }}
           ports:
             - containerPort: 5432
           env:
@@ -140,7 +234,7 @@ spec:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:
-            {{ if .Values.ontocloak.persistence.enabled }}
+            {{ if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
             - name: {{ .Release.Name }}-ontocloak-db-cluster
               mountPath: /var/lib/postgresql/data
             {{ end }}
@@ -150,24 +244,16 @@ spec:
       priorityClassName: high-priority
       {{- end }}
       volumes:
-        {{ if .Values.ontocloak.persistence.enabled }}
+        {{ if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
         - name: {{ .Release.Name }}-ontocloak-db-cluster
-          azureDisk:
-            kind: Managed
-            diskName: {{ required "A ontocloak.persistence.diskName value is required" .Values.ontocloak.persistence.diskName }}
-            diskURI: {{ required "A ontocloak.persistence.diskUri value is required" .Values.ontocloak.persistence.diskUri }}
-        {{ end }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-db-files
+        {{- end }}
         - name: {{ .Release.Name }}-ontocloak-db-init
           configMap:
             name: {{ .Release.Name }}-ontocloak-db-init
-      {{- if .Values.ontocloak.tolerations }}
-      tolerations:
-        {{- range $index, $element := .Values.ontocloak.tolerations }}
-        - key: {{ $element.key }}
-          operator: {{ $element.operator }}
-          value: {{ $element.value }}
-          effect: {{ $element.effect }}
-        {{- end }}
+      {{- if .Values.ontocloak.deployment.db.provided.tolerations }}
+      tolerations: {{ toJson .Values.ontocloak.deployment.db.provided.tolerations }}
       {{- end }}
 ---
 apiVersion: v1
@@ -176,14 +262,7 @@ metadata:
   name: {{ .Release.Name }}-ontocloak-db-init
 data:
   init-db.sh: {{ tpl (.Files.Get "configuration/init-db.sh") . | quote }}
-{{ end }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Release.Name }}-ontocloak-db-password
-data:
-  password: {{ .Values.ontocloak.database.password | b64enc }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Secret
@@ -192,12 +271,10 @@ metadata:
 data:
   password: {{ .Values.ontocloak.admin.password | b64enc }}
 ---
-{{- if .Values.repoSecret.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $.Values.repoSecret.name }}
+  name: {{ .Release.Name }}-ontocloak-db-secret
 data:
-  .dockerconfigjson:  {{ $.Values.repoSecret.dockerconfigjson }}
-type: kubernetes.io/dockerconfigjson
-{{- end }}
+  username: {{ .Values.ontocloak.deployment.db.user | b64enc }}
+  password: {{ .Values.ontocloak.deployment.db.password | b64enc }}
