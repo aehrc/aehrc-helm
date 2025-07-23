@@ -43,11 +43,11 @@ spec:
             - name: KC_DB_SCHEMA
               value: public
             - name: KC_DB_URL_HOST
-            {{ if .Values.ontocloak.deployment.db.external }}
+            {{- if .Values.ontocloak.deployment.db.external.enabled }}
               value: {{ .Values.ontocloak.deployment.db.external.hostName }}
-            {{ else }}
+            {{- else }}
               value: {{ .Release.Name }}-ontocloak-db-service
-            {{ end }}
+            {{- end }}
             - name: KC_DB_URL_DATABASE
               value: {{ .Values.ontocloak.deployment.db.database }}
             - name: KC_DB_USERNAME
@@ -77,11 +77,11 @@ spec:
             - name: TZ
               value: {{ .Values.ontocloak.timeZone }}
             - name: KC_DB_URL_HOST
-            {{ if .Values.ontocloak.deployment.db.external.enabled }}
+            {{- if .Values.ontocloak.deployment.db.external.enabled }}
               value: {{ .Values.ontocloak.deployment.db.external.hostName }}
-            {{ else }}
+            {{- else }}
               value: {{ .Release.Name }}-ontocloak-db-service
-            {{ end }}
+            {{- end }}
             - name: KC_DB_URL_DATABASE
               value: {{ .Values.ontocloak.deployment.db.database }}
             - name: KC_DB_SCHEMA
@@ -143,11 +143,11 @@ spec:
             - name: TZ
               value: {{ .Values.ontocloak.timeZone }}
             - name: KC_DB_URL_HOST
-            {{ if .Values.ontocloak.deployment.db.external.enabled }}
+            {{- if .Values.ontocloak.deployment.db.external.enabled }}
               value: {{ .Values.ontocloak.deployment.db.external.hostName }}
-            {{ else }}
+            {{- else }}
               value: {{ .Release.Name }}-ontocloak-db-service
-            {{ end }}
+            {{- end }}
             - name: KC_DB_URL_DATABASE
               value: {{ .Values.ontocloak.deployment.db.database }}
             - name: KC_DB_SCHEMA
@@ -234,7 +234,7 @@ spec:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:
-            {{ if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
+            {{- if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
             - name: {{ .Release.Name }}-ontocloak-db-cluster
               mountPath: /var/lib/postgresql/data
             {{ end }}
@@ -244,7 +244,7 @@ spec:
       priorityClassName: high-priority
       {{- end }}
       volumes:
-        {{ if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
+        {{- if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
         - name: {{ .Release.Name }}-ontocloak-db-cluster
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-db-files
