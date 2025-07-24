@@ -129,8 +129,11 @@ spec:
             failureThreshold: 10
           resources:
             requests:
-              cpu: {{ .Values.ontocloak.deployment.resources.cpu }}
-              memory: {{ .Values.ontocloak.deployment.resources.memory }}
+              cpu: {{ .Values.ontocloak.deployment.resources.requests.cpu }}
+              memory: {{ .Values.ontocloak.deployment.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.ontocloak.deployment.resources.limits.cpu }}
+              memory: {{ .Values.ontocloak.deployment.resources.limits.memory }}
           args:
             - start
             {{- if .Values.ontocloak.migration.enabled }}
@@ -198,71 +201,6 @@ spec:
       {{- if .Values.ontocloak.deployment.tolerations }}
       tolerations: {{ toJson .Values.ontocloak.deployment.tolerations }}
       {{- end }}
-{{ if not .Values.ontocloak.deployment.db.external.enabled }}
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: {{ .Release.Name }}-ontocloak-db-deployment
-spec:
-  selector:
-    matchLabels:
-      app: {{ .Release.Name }}-ontocloak-db
-  strategy:
-    type: {{ .Values.ontocloak.deployment.db.provided.deploymentStrategy }}
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}-ontocloak-db
-    spec:
-      containers:
-        - name: {{ .Release.Name }}-ontocloak-db
-          image: postgres:{{ .Values.ontocloak.deployment.db.provided.postgresVersion }}
-          ports:
-            - containerPort: 5432
-          env:
-            - name: LANG
-              value: en_US.UTF-8
-            - name: LANGUAGE
-              value: en_US:en
-            - name: LC_ALL
-              value: en_US.UTF-8
-            - name: POSTGRES_HOST_AUTH_METHOD
-              value: trust
-            - name: TZ
-              value: {{ .Values.ontocloak.timeZone }}
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
-          volumeMounts:
-            {{- if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
-            - name: {{ .Release.Name }}-ontocloak-db-cluster
-              mountPath: /var/lib/postgresql/data
-            {{ end }}
-            - name: {{ .Release.Name }}-ontocloak-db-init
-              mountPath: /docker-entrypoint-initdb.d
-      {{- if .Values.ontocloak.highPriority }}
-      priorityClassName: high-priority
-      {{- end }}
-      volumes:
-        {{- if .Values.ontocloak.deployment.db.provided.persistence.enabledForDeployment }}
-        - name: {{ .Release.Name }}-ontocloak-db-cluster
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-db-files
-        {{- end }}
-        - name: {{ .Release.Name }}-ontocloak-db-init
-          configMap:
-            name: {{ .Release.Name }}-ontocloak-db-init
-      {{- if .Values.ontocloak.deployment.db.provided.tolerations }}
-      tolerations: {{ toJson .Values.ontocloak.deployment.db.provided.tolerations }}
-      {{- end }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-ontocloak-db-init
-data:
-  init-db.sh: {{ tpl (.Files.Get "configuration/init-db.sh") . | quote }}
-{{- end }}
 ---
 apiVersion: v1
 kind: Secret
@@ -270,11 +208,3 @@ metadata:
   name: {{ .Release.Name }}-ontocloak-keycloak-password
 data:
   password: {{ .Values.ontocloak.admin.password | b64enc }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Release.Name }}-ontocloak-db-secret
-data:
-  username: {{ .Values.ontocloak.deployment.db.user | b64enc }}
-  password: {{ .Values.ontocloak.deployment.db.password | b64enc }}

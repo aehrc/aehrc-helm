@@ -1,7 +1,5 @@
 ontocloak:
   deployment:
-    ## @param ontocloak.deployment.kind                Kind of controller (Deployment or StatefulSet)
-    kind: Deployment
     ## @param ontocloak.deployment.annotations         Controller manifest annotations
     annotations: {}
     ## @param ontocloak.deployment.labels.             Controller manifest labels
@@ -21,10 +19,16 @@ ontocloak:
     ## @param ontocloak.deployment.deploymentStrategy  K8s update strategy for Ontocloak Pod
     deploymentStrategy: RollingUpdate
     resources:
-      ## @param ontocloak.deployment.resources.cpu     CPU request for Ontocloak Pod (in millicores)
-      cpu: 500m
-      ## @param ontocloak.deployment.resources.memory  Memory request for Ontocloak Pod
-      memory: 1Gi
+      requests:
+        ## @param ontocloak.deployment.resources.requests.cpu     CPU request for Ontocloak Pod (in millicores)
+        cpu: 500m
+        ## @param ontocloak.deployment.resources.requests.memory  Memory request for Ontocloak Pod
+        memory: 1Gi
+      limits:
+        ## @param ontocloak.deployment.resources.limits.cpu     CPU limits for Ontocloak Pod (in millicores)
+        cpu: 500m
+        ## @param ontocloak.deployment.resources.limits.memory  Memory limits for Ontocloak Pod
+        memory: 1Gi
     ## @param ontocloak.deployment.tolerations         Enable Pod tolerations
     tolerations: []
     db:
@@ -38,23 +42,29 @@ ontocloak:
       external:
         enabled: false
         ## @param ontocloak.deployment.db.external.hostName External DB host name
-        hostName:
+        hostName: ""
       provided:
         ## @param ontocloak.deployment.db.provided.deploymentStrategy  Update strategy for provided Postgres Pod
         deploymentStrategy: RollingUpdate
         ## @param ontocloak.deployment.db.provided.postgresVersion     Postgres version for provided database
         postgresVersion: 12
         resources:
-          ## @param ontocloak.deployment.db.provided.resources.cpu     CPU request for Ontocloak Pod (in millicores)
-          cpu: 500m
-          ## @param ontocloak.deployment.db.provided.resources.memory  Memory request for Ontocloak Pod
-          memory: 1Gi
+          requests:
+            ## @param ontocloak.deployment.db.provided.resources.requests.cpu       CPU request for Ontocloak Pod (in millicores)
+            cpu: 500m
+            ## @param ontocloak.deployment.db.provided.resources.requests.memory    Memory request for Ontocloak Pod
+            memory: 1Gi
+          limits:
+            ## @param ontocloak.deployment.db.provided.resolimitsrces.requests.cpu  CPU limits for Ontocloak Pod (in millicores)
+            cpu: 500m
+            ## @param ontocloak.deployment.db.provided.limits.requests.memory       Memory limits for Ontocloak Pod
+            memory: 1Gi
         ## @param ontocloak.deployment.db.provided.tolerations         Enable Pod tolerations
         tolerations: []
         persistence:
-          ## @param ontocloak.deployment.persistence.enabledForDeployment  Enable PVC for deployment
-          enabledForDeployment: false
-          files:
+          ## @param ontocloak.deployment.persistence.enabled           Enable PVC for databse files - Ignored if database is external
+          enabled: true
+          config:
             diskSize: 10Gi
             existingVolume:
               ## @param ontocloak.deployment.persistence.dbfiles.existingVolume.enabled  Bind to existing PV
@@ -93,17 +103,17 @@ ontocloak:
     realmName: ontocloak-realm
     authoringServer:
       ## @param ontocloak.migration.authoringServer.base            Base URL for authoring server
-      base:
+      base: ""
       ## @param ontocloak.migration.authoringServer.fhir            FHIR API endpoint for authoring server
-      fhir:
+      fhir: ""
     productionServer:
       ## @param ontocloak.migration.productionServer.base           Base URL for production server
-      base: 
+      base: ""
       ## @param ontocloak.migration.productionServer.fhir           FHIR API endpoint for production server
-      fhir:
+      fhir: ""
     syndicationServer:
       ## @param ontocloak.migration.syndicationServer.base          Base URL for syndication server
-      base:
+      base: ""
     clientSecrets:
       ## @param ontocloak.migration.clientSecrets.releasePromotion  Secret for release promotion client - provide it on command line, do not commit to git
       releasePromotion: password
@@ -122,6 +132,7 @@ ontocloak:
     user: admin
     ## @param ontocloak.admin.password                    Admin password - provide it on command line, do not commit to git
     password: password
+  ## Configuration to include in the ontocloak.properties file
   config:
     ontocloak.action.agreement.enduser.version: "1.0"
     ontocloak.action.agreement.enduser.title: Acme End User Agreement v1.0
@@ -131,11 +142,6 @@ ontocloak:
     ontocloak.action.agreement.customer.title: Acme Customer Agreement v1.0
     ontocloak.action.agreement.customer.group: Customers
     ontocloak.action.agreement.customer.html_text: example
-  tls:
-    ## @param ontocloak.tls.enabled                       Enable TLS Termination
-    enabled: true
-    ## @param ontocloak.tls.certRef                       Reference to TLS certificate secret
-    certRef:
   certmanager:
     ## @param ontocloak.certmanager.enabled               Enable cert-manager
     enabled: true
@@ -143,6 +149,11 @@ ontocloak:
     clusterIssuerName: letsencrypt
     ## @param ontocloak.certmanager.email                 Notification email for ACME
     email: noreply@example.com
+  tls:
+    ## @param ontocloak.tls.enabled                       Enable TLS Termination
+    enabled: true
+    ## @param ontocloak.tls.certRef                       Reference to TLS certificate secret
+    certRef: ""
   gateway:
     ## @param ontocloak.gateway.enabled                   Enable Gateway API
     enabled: true
@@ -159,11 +170,12 @@ ontocloak:
   ingress:
     ## @param ontocloak.ingress.enabled                   Enable ingress for Ontocloak
     enabled: false
+    ## @param ontocloak.ingress.annotations               Ingress resource annotations
+    annotations: {}
     ## @param ontocloak.ingress.className                 Ingress class name (e.g., nginx, alb)
     className: ontocloak-nginx
     #className: azure/application-gateway
     #className: alb
-    annotations: {}
 
 # F5 NGINX Ingress Controller Configuration
 nginx-ingress:
