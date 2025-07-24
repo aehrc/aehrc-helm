@@ -44,7 +44,7 @@ spec:
             {{- if .Values.ontocloak.deployment.db.provided.persistence.enabled }}
             - name: {{ .Release.Name }}-ontocloak-db-cluster
               mountPath: /var/lib/postgresql/data
-            {{ end }}
+            {{- end }}
             - name: {{ .Release.Name }}-ontocloak-db-init
               mountPath: /docker-entrypoint-initdb.d
       {{- if .Values.ontocloak.highPriority }}

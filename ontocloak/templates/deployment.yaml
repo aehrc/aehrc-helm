@@ -63,9 +63,26 @@ spec:
                   key: password
           args:
             - |
-              if PGPASSWORD="$KC_DB_PASSWORD" psql -h "$KC_DB_HOST" -U "$KC_DB_USERNAME" \
-                -d "$KC_DB_DATABASE" -tAc "SELECT 1 FROM $KC_DB_SCHEMA.realm WHERE name='${KC_REALM_NAME}' LIMIT 1;" | grep -q 1; then
-                echo "Realm exists – writing flag" && mkdir -p /work && touch /work/skip;
+              set -e
+              # wait up to ~2m for the DB to be reachable
+              ready=false
+              for i in {1..12}; do
+                if PGPASSWORD="$KC_DB_PASSWORD" \
+                  psql -h "$KC_DB_URL_HOST" -U "$KC_DB_USERNAME" -d "$KC_DB_URL_DATABASE" -c '\q'; then
+                  echo "DB is up!" && ready=true && break
+                fi
+                echo "Waiting for DB… ($i/12)" && sleep 5
+              done
+              if ! $ready; then
+                echo "ERROR: DB not ready after 60s" >&2
+                exit 1
+              fi
+              # now check for the realm
+              if PGPASSWORD="$KC_DB_PASSWORD" \
+                psql -h "$KC_DB_URL_HOST" -U "$KC_DB_USERNAME" -d "$KC_DB_URL_DATABASE" \
+                  -tAc "SELECT 1 FROM $KC_DB_SCHEMA.realm WHERE name='${KC_REALM_NAME}' LIMIT 1;" \
+                | grep -q 1; then
+                echo "Realm exists – skipping import" && mkdir -p /work && touch /work/skip
               fi
           volumeMounts:
             - name: workdir
