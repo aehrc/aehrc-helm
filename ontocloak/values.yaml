@@ -165,7 +165,7 @@ ontocloak:
     ## @param ontocloak.config.ontocloak.action.agreement.customer.html_text     Customer Agreement Text
     ontocloak.action.agreement.customer.html_text: example
 
-  ## @section Networking/Ingress
+  ## @section Cert-Manager
   certmanager:
     ## @param ontocloak.certmanager.enabled               Enable cert-manager
     enabled: true
@@ -173,11 +173,13 @@ ontocloak:
     clusterIssuerName: letsencrypt
     ## @param ontocloak.certmanager.email                 Notification email for ACME
     email: noreply@example.com
+  ## @section TLS settings
   tls:
     ## @param ontocloak.tls.enabled                       Enable TLS Termination
     enabled: true
     ## @param ontocloak.tls.certRef                       Reference to TLS certificate secret
     certRef: ""
+  ## @section Gateway API settings
   gateway:
     ## @param ontocloak.gateway.enabled                   Enable Gateway API
     enabled: true
@@ -191,6 +193,7 @@ ontocloak:
     className: envoy-gateway-class
     ## @param ontocloak.gateway.requestTimeout            Request timeout duration
     requestTimeout: 5s
+  ## @section Ingress resource settings
   ingress:
     ## @param ontocloak.ingress.enabled                   Enable ingress for Ontocloak
     enabled: false
@@ -202,6 +205,7 @@ ontocloak:
     #className: alb
 
 # F5 NGINX Ingress Controller Configuration
+## @section F5 nginx-ingress-controller settings
 nginx-ingress:
   ## @param nginx-ingress.enabled                         Enable F5 nginx-ingress-controller
   enabled: false  

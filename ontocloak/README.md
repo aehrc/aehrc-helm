@@ -84,25 +84,45 @@
 | `ontocloak.config.ontocloak.action.agreement.customer.group`     | Customer Agreement Group   | `Customers`                    |
 | `ontocloak.config.ontocloak.action.agreement.customer.html_text` | Customer Agreement Text    | `example`                      |
 
-### Networking/Ingress
+### Cert-Manager
+
+| Name                                      | Description                                       | Value                 |
+| ----------------------------------------- | ------------------------------------------------- | --------------------- |
+| `ontocloak.certmanager.enabled`           | Enable cert-manager                               | `true`                |
+| `ontocloak.certmanager.clusterIssuerName` | ClusterIssuer name or prefix for Geteway's Issuer | `letsencrypt`         |
+| `ontocloak.certmanager.email`             | Notification email for ACME                       | `noreply@example.com` |
+
+### TLS settings
+
+| Name                    | Description                         | Value  |
+| ----------------------- | ----------------------------------- | ------ |
+| `ontocloak.tls.enabled` | Enable TLS Termination              | `true` |
+| `ontocloak.tls.certRef` | Reference to TLS certificate secret | `""`   |
+
+### Gateway API settings
 
 | Name                                          | Description                                                            | Value                 |
 | --------------------------------------------- | ---------------------------------------------------------------------- | --------------------- |
-| `ontocloak.certmanager.enabled`               | Enable cert-manager                                                    | `true`                |
-| `ontocloak.certmanager.clusterIssuerName`     | ClusterIssuer name or prefix for Geteway's Issuer                      | `letsencrypt`         |
-| `ontocloak.certmanager.email`                 | Notification email for ACME                                            | `noreply@example.com` |
-| `ontocloak.tls.enabled`                       | Enable TLS Termination                                                 | `true`                |
-| `ontocloak.tls.certRef`                       | Reference to TLS certificate secret                                    | `""`                  |
 | `ontocloak.gateway.enabled`                   | Enable Gateway API                                                     | `true`                |
 | `ontocloak.gateway.listenerPortSecure`        | Secure listener port -  Depends on the gateway class - Traefik is 8443 | `443`                 |
 | `ontocloak.gateway.annotations`               | Gateway annotations                                                    | `{}`                  |
 | `ontocloak.gateway.infrastructureAnnotations` | Infrastructure annotations                                             | `{}`                  |
 | `ontocloak.gateway.className`                 | GatewayClass name                                                      | `envoy-gateway-class` |
 | `ontocloak.gateway.requestTimeout`            | Request timeout duration                                               | `5s`                  |
-| `ontocloak.ingress.enabled`                   | Enable ingress for Ontocloak                                           | `false`               |
-| `ontocloak.ingress.annotations`               | Ingress resource annotations                                           | `{}`                  |
-| `ontocloak.ingress.className`                 | Ingress class name (e.g., nginx, alb)                                  | `ontocloak-nginx`     |
-| `nginx-ingress.enabled`                       | Enable F5 nginx-ingress-controller                                     | `false`               |
+
+### Ingress resource settings
+
+| Name                            | Description                           | Value             |
+| ------------------------------- | ------------------------------------- | ----------------- |
+| `ontocloak.ingress.enabled`     | Enable ingress for Ontocloak          | `false`           |
+| `ontocloak.ingress.annotations` | Ingress resource annotations          | `{}`              |
+| `ontocloak.ingress.className`   | Ingress class name (e.g., nginx, alb) | `ontocloak-nginx` |
+
+### F5 nginx-ingress-controller settings
+
+| Name                    | Description                        | Value   |
+| ----------------------- | ---------------------------------- | ------- |
+| `nginx-ingress.enabled` | Enable F5 nginx-ingress-controller | `false` |
 
 -------------------------------------------------------------------------------------------------
 Table genareted with Helm readme generator: https://github.com/bitnami/readme-generator-for-helm
