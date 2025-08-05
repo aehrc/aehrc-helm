@@ -5,11 +5,12 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 8080
   selector:
     app: {{ .Release.Name }}-ontocloak
-{{ if not .Values.ontocloak.deployment.db.external }}
+{{- if not .Values.ontocloak.deployment.db.external }}
 ---
 kind: Service
 apiVersion: v1
@@ -22,4 +23,20 @@ spec:
       targetPort: 5432
   selector:
     app: {{ .Release.Name }}-ontocloak-db
-{{ end }}
+{{- end }}
+{{- if .Values.ontocloak.metrics.enabled }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-montocloak-etrics
+  labels:
+    app: {{ .Release.Name }}-ontocloak
+spec:
+  selector:
+    {{ .Release.Name }}-ontocloak
+  ports:
+    - name: metrics
+      port: 9000
+      targetPort: metrics
+{{- end }}

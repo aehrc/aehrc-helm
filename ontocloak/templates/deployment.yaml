@@ -136,7 +136,12 @@ spec:
           image: {{ required "An ontocloak.image value is required" .Values.ontocloak.deployment.image }}
           imagePullPolicy: Always
           ports:
-           - containerPort: 8080
+           - name: http
+             containerPort: 8080
+           {{- if .Values.ontocloak.metrics.enabled }}
+           - name: metrics
+             containerPort: 9000
+           {{- end }}
           livenessProbe:
             httpGet:
               path: /auth
@@ -162,6 +167,10 @@ spec:
           env:
             - name: TZ
               value: {{ .Values.ontocloak.timeZone }}
+            {{- if .Values.ontocloak.metrics.enabled }}
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            {{- end }}
             - name: KC_DB_URL_HOST
             {{- if .Values.ontocloak.deployment.db.external.enabled }}
               value: {{ .Values.ontocloak.deployment.db.external.hostName }}
@@ -190,6 +199,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-ontocloak-keycloak-password
                   key: password
+            {{- range $key, $value := .Values.ontocloak.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           volumeMounts:
             - name: {{ .Release.Name }}-ontocloak-properties
               mountPath: /opt/keycloak/conf/agreements.properties

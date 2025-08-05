@@ -71,7 +71,7 @@
 | `ontocloak.migration.clientSecrets.bundleImport`     | Secret for bundle import client - provide it on command line, do not commit to git     | `password`        |
 | `ontocloak.migration.clientSecrets.ontoUi`           | Secret for OntoUI client - provide it on command line, do not commit to git            | `password`        |
 
-### Server Environment variables
+### Configuration to include in the ontocloak.properties file
 
 | Name                                                             | Description                | Value                          |
 | ---------------------------------------------------------------- | -------------------------- | ------------------------------ |
@@ -83,6 +83,12 @@
 | `ontocloak.config.ontocloak.action.agreement.customer.title`     | Customer Agreement Title   | `Acme Customer Agreement v1.0` |
 | `ontocloak.config.ontocloak.action.agreement.customer.group`     | Customer Agreement Group   | `Customers`                    |
 | `ontocloak.config.ontocloak.action.agreement.customer.html_text` | Customer Agreement Text    | `example`                      |
+
+### Server Environment variables
+
+| Name            | Description                                | Value |
+| --------------- | ------------------------------------------ | ----- |
+| `ontocloak.env` | Additional Ontocloak environment variables | `{}`  |
 
 ### Cert-Manager
 
@@ -117,6 +123,13 @@
 | `ontocloak.ingress.enabled`     | Enable ingress for Ontocloak          | `false`           |
 | `ontocloak.ingress.annotations` | Ingress resource annotations          | `{}`              |
 | `ontocloak.ingress.className`   | Ingress class name (e.g., nginx, alb) | `ontocloak-nginx` |
+
+### Prometheus metrics
+
+| Name                        | Description               | Value   |
+| --------------------------- | ------------------------- | ------- |
+| `ontocloak.metrics.enabled` | Enable Prometheus Metrics | `false` |
+| `ontocloak.metrics.port`    | Prometheus Metrics port   | `9000`  |
 
 ### F5 nginx-ingress-controller settings
 

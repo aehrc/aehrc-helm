@@ -143,8 +143,7 @@ ontocloak:
       ## @param ontocloak.migration.clientSecrets.ontoUi            Secret for OntoUI client - provide it on command line, do not commit to git
       ontoUi: password
 
-  ## @section Server Environment variables
-  ## Configuration to include in the ontocloak.properties file
+  ## @section Configuration to include in the ontocloak.properties file
   config:
     # User Agreement settings
     # https://ontoserver.csiro.au/site/technical-documentation/ontocloak-documentation/manage-user-agreements/
@@ -164,6 +163,10 @@ ontocloak:
     ontocloak.action.agreement.customer.group: Customers
     ## @param ontocloak.config.ontocloak.action.agreement.customer.html_text     Customer Agreement Text
     ontocloak.action.agreement.customer.html_text: example
+
+  ## @section Server Environment variables
+  ## @param ontocloak.env                                 Additional Ontocloak environment variables
+  env: {}
 
   ## @section Cert-Manager
   certmanager:
@@ -203,6 +206,12 @@ ontocloak:
     className: ontocloak-nginx
     #className: azure/application-gateway
     #className: alb
+  ## @section Prometheus metrics
+  metrics:
+    ## @param ontocloak.metrics.enabled                   Enable Prometheus Metrics
+    enabled: false
+    ## @param ontocloak.metrics.port                      Prometheus Metrics port
+    port: 9000
 
 # F5 NGINX Ingress Controller Configuration
 ## @section F5 nginx-ingress-controller settings

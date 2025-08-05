@@ -161,6 +161,17 @@
           "type": "object",
           "additionalProperties": {}
         },
+        "env": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "port":    { "type": "integer" }
+          }
+        },
         "certmanager": {
           "type": "object",
           "properties": {
