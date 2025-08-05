@@ -1,5 +1,6 @@
 # Ontocloak Helm chart
 
+Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontocloak/](https://ontoserver.csiro.au/site/our-solutions/ontocloak/)
 
 ## Parameters
 
@@ -138,6 +139,4 @@
 | `nginx-ingress.enabled` | Enable F5 nginx-ingress-controller | `false` |
 
 -------------------------------------------------------------------------------------------------
-Table genareted with Helm readme generator: https://github.com/bitnami/readme-generator-for-helm
--------------------------------------------------------------------------------------------------
-
+Table genareted with Readme Generator For Helm: [https://github.com/bitnami/readme-generator-for-helm](https://github.com/bitnami/readme-generator-for-helm)

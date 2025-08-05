@@ -21,7 +21,3 @@
 {{- if and  $ngi.enabled  (not .Values.ontocloak.ingress.enabled) }}
   {{- fail "Don't include nginx-ingress-controller when Ingress is disabled!" }}
 {{- end }}
-
-{{ if and .Values.ontocloak.deployment.db.provided.persistence.enabled .Values.ontocloak.deployment.db.external.enabled }}
-  {{ fail "Cannot have both local database persistence and external database in use - use one or the other" }}
-{{ end }}
