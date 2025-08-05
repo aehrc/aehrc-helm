@@ -112,8 +112,6 @@ ontocloak:
   # Use this section to set up a default realm for the first start. After first startup you can set ontocloak.migration.skipCheck to true #
   #########################################################################################################################################
   migration:
-    ## @param ontocloak.migration.enabled                             Enable server database initialisation/migration on startup.
-    enabled: false
     ## @param ontocloak.migration.skipCheck                           Skip Database Check during startup - Leave it false if you run migration on startup
     skipCheck: false
     ## @param ontocloak.migration.realmName                           Keycloak realm name (URL-safe)

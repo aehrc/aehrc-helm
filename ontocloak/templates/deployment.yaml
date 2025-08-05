@@ -124,7 +124,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              if [ -f /work/skip ]; then echo "Skipping import"; else kc.sh import --file=/opt/keycloak/data/import/realm.json --override; fi
+              if [ -f /work/skip ]; then echo "Realm exist in database! Skipping import..."; else kc.sh import --file=/opt/keycloak/data/import/realm.json --override --hostname={{ .Values.ontocloak.serverName }} --proxy edge --optimized; fi
           volumeMounts:
             - name: workdir
               mountPath: /work
@@ -158,9 +158,6 @@ spec:
               memory: {{ .Values.ontocloak.deployment.resources.limits.memory }}
           args:
             - start
-            {{- if .Values.ontocloak.migration.enabled }}
-            - --import-realm
-            {{- end }}
             - --hostname={{ .Values.ontocloak.serverName }}
             - --proxy edge
             - --optimized
@@ -214,9 +211,6 @@ spec:
             - name: {{ .Release.Name }}-ontocloak-login-customisation
               mountPath: /opt/keycloak/themes/ontocloak/login
             {{- end}}
-      {{- if .Values.ontocloak.highPriority }}
-      priorityClassName: high-priority
-      {{- end }}
       volumes:
         {{- if not .Values.ontocloak.migration.skipCheck }}
         - name: {{ .Release.Name }}-ontocloak-realm-config

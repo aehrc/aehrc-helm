@@ -1,4 +1,4 @@
-{{- if .Values.ontocloak.migration.enabled }}
+{{- if not .Values.ontocloak.migration.skipCheck }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

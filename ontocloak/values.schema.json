@@ -115,7 +115,6 @@
         "migration": {
           "type": "object",
           "properties": {
-            "enabled":   { "type": "boolean" },
             "skipCheck": { "type": "boolean" },
             "realmName": { "type": "string" },
             "authoringServer": {
@@ -150,7 +149,7 @@
               }
             }
           },
-          "required": ["enabled"]
+          "required": ["skipCheck"]
         },
         "admin": {
           "type": "object",
