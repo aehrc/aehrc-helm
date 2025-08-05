@@ -34,7 +34,7 @@ spec:
   selector:
     app: {{ .Release.Name }}-ontocloak
   ports:
-    - name: metrics
+    - name: management
       port: 9000
       targetPort: metrics
 {{- end }}

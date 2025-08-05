@@ -139,16 +139,30 @@ spec:
            - name: http
              containerPort: 8080
            {{- if .Values.ontocloak.metrics.enabled }}
-           - name: metrics
+           - name: management
              containerPort: 9000
            {{- end }}
           livenessProbe:
             httpGet:
-              path: /auth
+              path: /auth/health/live
               port: 8080
-            initialDelaySeconds: 40
+            initialDelaySeconds: 50
             periodSeconds: 5
             failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /auth/health/ready
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /auth/health/started
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 120
           resources:
             requests:
               cpu: {{ .Values.ontocloak.deployment.resources.requests.cpu }}
@@ -164,10 +178,6 @@ spec:
           env:
             - name: TZ
               value: {{ .Values.ontocloak.timeZone }}
-            {{- if .Values.ontocloak.metrics.enabled }}
-            - name: KC_METRICS_ENABLED
-              value: "true"
-            {{- end }}
             - name: KC_DB_URL_HOST
             {{- if .Values.ontocloak.deployment.db.external.enabled }}
               value: {{ .Values.ontocloak.deployment.db.external.hostName }}

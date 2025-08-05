@@ -50,6 +50,18 @@ spec:
       {{- end }}
   {{- end }}
 ---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: HTTPRouteFilter
+metadata:
+  name: deny-404
+spec:
+  directResponse:
+    statusCode: 404
+    contentType: text/plain
+    body:
+      type: Inline
+      inline: "not found"
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -67,6 +79,22 @@ spec:
       name: {{ $.Release.Name }}-gw
   {{- end }}
   rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /auth/metrics
+        - path: 
+            type: Exact
+            value: /auth/health
+        - path:
+            type: PathPrefix
+            value: /auth/health/
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: gateway.envoyproxy.io
+            kind: HTTPRouteFilter
+            name: deny-404
     - backendRefs:
         - group: ''
           kind: Service
@@ -76,7 +104,7 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: /
+            value: /auth
       {{- if .Values.ontocloak.gateway.requestTimeout }}
       timeouts:
         request: "{{ .Values.ontocloak.gateway.requestTimeout }}"
