@@ -8,6 +8,7 @@
         "deployment": {
           "type": "object",
           "properties": {
+            "kc_sh_path":         { "type": "string" },
             "annotations":        { "type": "object" },
             "labels":             { "type": "object" },
             "podAnnotations":     { "type": "object" },

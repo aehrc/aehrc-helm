@@ -124,7 +124,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              if [ -f /work/skip ]; then echo "Realm exist in database! Skipping import..."; else kc.sh import --file=/opt/keycloak/data/import/realm.json --override --hostname={{ .Values.ontocloak.serverName }} --proxy edge --optimized; fi
+              if [ -f /work/skip ]; then echo "Realm exist in database! Skipping import..."; else {{ .Values.ontocloak.deployment.kc_sh_path }} import --file=/opt/keycloak/data/import/realm.json --override --hostname={{ .Values.ontocloak.serverName }} --proxy edge --optimized; fi
           volumeMounts:
             - name: workdir
               mountPath: /work

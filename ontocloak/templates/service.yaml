@@ -29,12 +29,10 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ .Release.Name }}-montocloak-etrics
-  labels:
-    app: {{ .Release.Name }}-ontocloak
+  name: {{ .Release.Name }}-montocloak-metrics
 spec:
   selector:
-    {{ .Release.Name }}-ontocloak
+    app: {{ .Release.Name }}-ontocloak
   ports:
     - name: metrics
       port: 9000

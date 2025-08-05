@@ -16,6 +16,8 @@ ontocloak:
 
   ## @section Deployment
   deployment:
+    ## @param ontocloak.deployment.kc_sh_path          Full path to kc.sh script within Keycloak image
+    kc_sh_path: /opt/keycloak/bin/kc.sh
     ## @param ontocloak.deployment.annotations         Controller manifest annotations
     annotations: {}
     ## @param ontocloak.deployment.labels              Controller manifest labels
@@ -181,7 +183,7 @@ ontocloak:
     ## @param ontocloak.tls.enabled                       Enable TLS Termination
     enabled: true
     ## @param ontocloak.tls.certRef                       Reference to TLS certificate secret
-    certRef: ""
+    certRef: "ontocloak-tls"
   ## @section Gateway API settings
   gateway:
     ## @param ontocloak.gateway.enabled                   Enable Gateway API

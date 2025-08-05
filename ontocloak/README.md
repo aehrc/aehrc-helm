@@ -18,6 +18,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 
 | Name                                                                                             | Description                                                    | Value                       |
 | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | --------------------------- |
+| `ontocloak.deployment.kc_sh_path`                                                                | Full path to kc.sh script within Keycloak image                | `/opt/keycloak/bin/kc.sh`   |
 | `ontocloak.deployment.annotations`                                                               | Controller manifest annotations                                | `{}`                        |
 | `ontocloak.deployment.labels`                                                                    | Controller manifest labels                                     | `{}`                        |
 | `ontocloak.deployment.podAnnotations`                                                            | Ontocloak pod annotations                                      | `{}`                        |
@@ -101,10 +102,10 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 
 ### TLS settings
 
-| Name                    | Description                         | Value  |
-| ----------------------- | ----------------------------------- | ------ |
-| `ontocloak.tls.enabled` | Enable TLS Termination              | `true` |
-| `ontocloak.tls.certRef` | Reference to TLS certificate secret | `""`   |
+| Name                    | Description                         | Value           |
+| ----------------------- | ----------------------------------- | --------------- |
+| `ontocloak.tls.enabled` | Enable TLS Termination              | `true`          |
+| `ontocloak.tls.certRef` | Reference to TLS certificate secret | `ontocloak-tls` |
 
 ### Gateway API settings
 
