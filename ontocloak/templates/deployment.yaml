@@ -133,7 +133,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Release.Name }}-ontocloak
-          image: {{ required "An ontocloak.image value is required" .Values.ontocloak.deployment.image }}
+          image: {{ required "An ontocloak.deployment.image value is required" .Values.ontocloak.deployment.image }}
           imagePullPolicy: Always
           ports:
            - name: http
