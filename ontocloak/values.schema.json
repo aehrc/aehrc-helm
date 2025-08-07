@@ -218,6 +218,12 @@
     "envoygateway": {
       "type": "object",
       "properties": {
+        "controller": {
+          "type": "object",
+          "properties": {
+            "install":  { "type": "boolean" }
+          }
+        },
         "healthAndMetrics": {
           "type": "object",
           "properties": {
