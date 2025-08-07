@@ -109,14 +109,14 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 
 ### Gateway API settings
 
-| Name                                          | Description                                                            | Value                 |
-| --------------------------------------------- | ---------------------------------------------------------------------- | --------------------- |
-| `ontocloak.gateway.enabled`                   | Enable Gateway API                                                     | `true`                |
-| `ontocloak.gateway.listenerPortSecure`        | Secure listener port -  Depends on the gateway class - Traefik is 8443 | `443`                 |
-| `ontocloak.gateway.annotations`               | Gateway annotations                                                    | `{}`                  |
-| `ontocloak.gateway.infrastructureAnnotations` | Infrastructure annotations                                             | `{}`                  |
-| `ontocloak.gateway.className`                 | GatewayClass name                                                      | `envoy-gateway-class` |
-| `ontocloak.gateway.requestTimeout`            | Request timeout duration                                               | `5s`                  |
+| Name                                          | Description                                                            | Value                            |
+| --------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------- |
+| `ontocloak.gateway.enabled`                   | Enable Gateway API                                                     | `true`                           |
+| `ontocloak.gateway.listenerPortSecure`        | Secure listener port -  Depends on the gateway class - Traefik is 8443 | `443`                            |
+| `ontocloak.gateway.annotations`               | Gateway annotations                                                    | `{}`                             |
+| `ontocloak.gateway.infrastructureAnnotations` | Infrastructure annotations                                             | `{}`                             |
+| `ontocloak.gateway.className`                 | GatewayClass name                                                      | `envoy-gateway-controller-class` |
+| `ontocloak.gateway.requestTimeout`            | Request timeout duration                                               | `5s`                             |
 
 ### Ingress resource settings
 
@@ -137,6 +137,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 
 | Name                                          | Description                                                                      | Value                  |
 | --------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------- |
+| `envoygateway.controller.install`             | Install Envoy Gateway Controller                                                 | `true`                 |
 | `envoygateway.healthAndMetrics.hideEndpoints` | Hide health and metrics endpoints via HTTPRouteFilter otherwise they are exposed | `false`                |
 | `envoygateway.healthAndMetrics.metricsPath`   | Metrics endpoint url path                                                        | `/auth/metrics`        |
 | `envoygateway.healthAndMetrics.healhPath`     | Health endpoint url path                                                         | `/auth/health`         |

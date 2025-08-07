@@ -195,7 +195,7 @@ ontocloak:
     ## @param ontocloak.gateway.infrastructureAnnotations Infrastructure annotations
     infrastructureAnnotations: {}
     ## @param ontocloak.gateway.className                 GatewayClass name
-    className: envoy-gateway-class
+    className: envoy-gateway-controller-class
     ## @param ontocloak.gateway.requestTimeout            Request timeout duration
     requestTimeout: 5s
   ## @section Ingress resource settings
@@ -217,6 +217,9 @@ ontocloak:
 
 ## @section Include Envoy Gateway controller specific manifests
 envoygateway:
+  controller:
+    ## @param envoygateway.controller.install                  Install Envoy Gateway Controller
+    install: true
   healthAndMetrics:
     ## @param envoygateway.healthAndMetrics.hideEndpoints      Hide health and metrics endpoints via HTTPRouteFilter otherwise they are exposed
     hideEndpoints: false

@@ -8,3 +8,7 @@ dependencies:
     condition: nginx-ingress.enabled
     version: 2.1.0
     repository: https://helm.nginx.com/stable
+  - name: gateway-helm
+    condition: envoygateway.controller.install
+    version: v1.4.1
+    repository: oci://docker.io/envoyproxy
