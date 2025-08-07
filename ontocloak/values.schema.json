@@ -215,6 +215,37 @@
       },
       "required": ["deployment","serverName","hostNames"]
     },
+    "envoygateway": {
+      "type": "object",
+      "properties": {
+        "healthAndMetrics": {
+          "type": "object",
+          "properties": {
+            "hideEndpoints":  { "type": "boolean" },
+            "metricsPath":    { "type": "string" },
+            "healhPath":      { "type": "string" }
+          }
+        },
+        "controlPlaneNamespace": { "type": "string" },
+        "servicemonitor": {
+          "type": "object",
+          "properties": {
+            "enabled":    { "type": "boolean" },
+            "port":       { "type": ["integer","string"] },
+            "path":       { "type": "string" },
+            "interval":   { "type": "string",  "pattern": "^([0-9]{1,5}(h|m|s)){1,4}$"}
+          }
+        },
+        "rateLimit": {
+          "type": "object",
+          "properties": {
+            "enabled":    { "type": "boolean" },
+            "requests":   { "type": "integer" },
+            "unit":       { "type": "string", "enum": ["Second","Minute","Hour","Day","Month","Year"] }
+          }
+        }
+      }
+    },
     "nginx-ingress": {
       "type": "object",
       "properties": {

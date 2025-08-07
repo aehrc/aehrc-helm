@@ -133,6 +133,22 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `ontocloak.metrics.enabled` | Enable Prometheus Metrics | `false` |
 | `ontocloak.metrics.port`    | Prometheus Metrics port   | `9000`  |
 
+### Include Envoy Gateway controller specific manifests
+
+| Name                                          | Description                                                                      | Value                  |
+| --------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------- |
+| `envoygateway.healthAndMetrics.hideEndpoints` | Hide health and metrics endpoints via HTTPRouteFilter otherwise they are exposed | `false`                |
+| `envoygateway.healthAndMetrics.metricsPath`   | Metrics endpoint url path                                                        | `/auth/metrics`        |
+| `envoygateway.healthAndMetrics.healhPath`     | Health endpoint url path                                                         | `/auth/health`         |
+| `envoygateway.controlPlaneNamespace`          | Envoy Gateway controller's namespace                                             | `envoy-gateway-system` |
+| `envoygateway.servicemonitor.enabled`         | Enable Envoy Gateway Prometheus ServiceMonitor custom resource                   | `false`                |
+| `envoygateway.servicemonitor.port`            | Envoy Gateway pod's metrics port - usually 9000 or named metrics                 | `metrics`              |
+| `envoygateway.servicemonitor.path`            | Envoy Gateway pod's Prometheus metrics url path                                  | `/stats/prometheus`    |
+| `envoygateway.servicemonitor.interval`        | Prometheus metrics update interval                                               | `15s`                  |
+| `envoygateway.rateLimit.enabled`              | Enable rate limiting for the gateway via BackendTrafficPolicy                    | `false`                |
+| `envoygateway.rateLimit.requests`             | Envoy dataplane rate limit - amount of requests per unit                         | `10`                   |
+| `envoygateway.rateLimit.unit`                 | Envoy dataplane rate limit unit Second/Minute/Hour/Day/Month/Year                | `Second`               |
+
 ### F5 nginx-ingress-controller settings
 
 | Name                    | Description                        | Value   |

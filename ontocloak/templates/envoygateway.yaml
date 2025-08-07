@@ -1,0 +1,87 @@
+{{- if .Values.envoygateway.healthAndMetrics.hideEndpoints }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: HTTPRouteFilter
+metadata:
+  name: deny-404
+spec:
+  directResponse:
+    statusCode: 404
+    contentType: text/plain
+    body:
+      type: Inline
+      inline: "not found"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}-envoy-route
+spec:
+  hostnames:
+    {{- range .Values.ontocloak.hostNames }}
+    - {{ . }}
+    {{- end }}
+  parentRefs:
+  {{- range $i := until (len .Values.ontocloak.hostNames) }}
+    - group: gateway.networking.k8s.io
+      sectionName: websecure-{{ $i }}
+      kind: Gateway
+      name: {{ $.Release.Name }}-gw
+  {{- end }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.envoygateway.healthAndMetrics.healhPath }}
+        - path:
+            type: PathPrefix
+            value: {{ .Values.envoygateway.healthAndMetrics.metricsPath }}
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: gateway.envoyproxy.io
+            kind: HTTPRouteFilter
+            name: deny-404
+{{- end }}
+{{- if .Values.envoygateway.rateLimit.enabled }}
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: proxy-settings
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ .Release.Name }}-route
+  rateLimit:
+    type: Local
+    local:
+      rules:
+      - limit:
+          requests: {{ .Values.envoygateway.rateLimit.requests }}
+          unit: {{ .Values.envoygateway.rateLimit.unit }}
+{{- end}}
+{{- if .Values.envoygateway.servicemonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ontocloak-test-gw-servicemonitor
+  labels:
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.envoygateway.controlPlaneNamespace }}
+  selector:
+    matchLabels:
+      gateway.envoyproxy.io/owning-gateway-name: {{ .Release.Name }}-gw
+  endpoints:
+    - port: {{ .Values.envoygateway.servicemonitor.port }}
+      path: {{ .Values.envoygateway.servicemonitor.path }}
+      interval: {{ .Values.envoygateway.servicemonitor.interval }}
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_gateway_envoyproxy_io_owning_gateway_name]
+          targetLabel: gateway
+          action: replace
+{{- end}}
