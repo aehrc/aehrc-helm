@@ -243,7 +243,7 @@ envoygateway:
     enabled: false
     # Per envoy data plane rate limit. If there are 2 data planes per gateway the limit will be 2 x 150 = 300 req/sec
     ## @param envoygateway.rateLimit.requests      Envoy dataplane rate limit - amount of requests per unit
-    requests: 10
+    requests: 100
     ## @param envoygateway.rateLimit.unit          Envoy dataplane rate limit unit Second/Minute/Hour/Day/Month/Year
     unit: Second
 

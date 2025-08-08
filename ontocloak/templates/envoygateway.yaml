@@ -31,7 +31,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: {{ .Values.envoygateway.healthAndMetrics.healhPath }}
+            value: {{ .Values.envoygateway.healthAndMetrics.healthPath }}
         - path:
             type: PathPrefix
             value: {{ .Values.envoygateway.healthAndMetrics.metricsPath }}
