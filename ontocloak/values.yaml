@@ -225,8 +225,8 @@ envoygateway:
     hideEndpoints: false
     ## @param envoygateway.healthAndMetrics.metricsPath        Metrics endpoint url path
     metricsPath: /auth/metrics
-    ## @param envoygateway.healthAndMetrics.healhPath          Health endpoint url path
-    healhPath: /auth/health
+    ## @param envoygateway.healthAndMetrics.healthPath         Health endpoint url path
+    healthPath: /auth/health
   ## @param envoygateway.controlPlaneNamespace     Envoy Gateway controller's namespace
   controlPlaneNamespace: envoy-gateway-system
   servicemonitor:

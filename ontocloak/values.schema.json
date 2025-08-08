@@ -229,7 +229,7 @@
           "properties": {
             "hideEndpoints":  { "type": "boolean" },
             "metricsPath":    { "type": "string" },
-            "healhPath":      { "type": "string" }
+            "healthPath":     { "type": "string" }
           }
         },
         "controlPlaneNamespace": { "type": "string" },

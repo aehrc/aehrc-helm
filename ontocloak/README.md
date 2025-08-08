@@ -140,7 +140,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `envoygateway.controller.install`             | Install Envoy Gateway Controller                                                 | `true`                 |
 | `envoygateway.healthAndMetrics.hideEndpoints` | Hide health and metrics endpoints via HTTPRouteFilter otherwise they are exposed | `false`                |
 | `envoygateway.healthAndMetrics.metricsPath`   | Metrics endpoint url path                                                        | `/auth/metrics`        |
-| `envoygateway.healthAndMetrics.healhPath`     | Health endpoint url path                                                         | `/auth/health`         |
+| `envoygateway.healthAndMetrics.healthPath`    | Health endpoint url path                                                         | `/auth/health`         |
 | `envoygateway.controlPlaneNamespace`          | Envoy Gateway controller's namespace                                             | `envoy-gateway-system` |
 | `envoygateway.servicemonitor.enabled`         | Enable Envoy Gateway Prometheus ServiceMonitor custom resource                   | `false`                |
 | `envoygateway.servicemonitor.port`            | Envoy Gateway pod's metrics port - usually 9000 or named metrics                 | `metrics`              |
