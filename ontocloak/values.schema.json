@@ -1,0 +1,277 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ontocloak": {
+      "type": "object",
+      "properties": {
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "kc_sh_path":         { "type": "string" },
+            "annotations":        { "type": "object" },
+            "labels":             { "type": "object" },
+            "podAnnotations":     { "type": "object" },
+            "podLabels":          { "type": "object" },
+            "image":              { "type": "string" },
+            "imagePullPolicy":    { "type": "string", "enum": ["Always","IfNotPresent","Never"] },
+            "imagePullSecrets": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "replicas":           { "type": "integer", "minimum": 0 },
+            "deploymentStrategy": { "type": "string", "enum": ["RollingUpdate","Recreate"] },
+            "tolerations": {
+              "type": "array",
+              "items": { "type": "object" }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu":     { "type": ["string","number"] },
+                      "memory":  { "type": "string" }
+                    }
+                  },
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                        "cpu":    { "type": ["string","number"] },
+                        "memory": { "type": "string" }
+                    }
+                  }
+              }
+            },
+            "db": {
+              "type": "object",
+              "properties": {
+                "user":            { "type": "string" },
+                "password":        { "type": "string" },
+                "external":  {
+                   "type": "object",
+                   "properties": {
+                    "enabled":     { "type": "boolean" },
+                    "hostName":    { "type": "string" }
+                   },
+                   "required": ["enabled"]
+                },
+                "provided":  {
+                   "type": "object",
+                   "properties": {
+                     "deploymentStrategy":  { "type": "string", "enum": ["RollingUpdate","OnDelete"], "default": "RollingUpdate" },
+                     "postgresVersion":    { "type": ["string","number"] },
+                     "persistence": {
+                        "type": "object",
+                        "properties": {
+                          "enabled": { "type": "boolean" },
+                          "config": {
+                            "type": "object",
+                            "properties": {
+                              "diskSize": { "type": ["string"] },
+                              "existingVolume": {
+                                "type": "object",
+                                "properties": {
+                                  "enabled": { "type": "boolean" },
+                                  "name":    { "type": "string" }
+                                }
+                              },
+                              "storageClass": {
+                                "type": "object",
+                                "properties": {
+                                  "name": { "type": "string" },
+                                  "provided": {
+                                    "type": "object",
+                                    "properties": {
+                                      "enabled":            { "type": "boolean" },
+                                      "storageProvisioner": { "type": "string" },
+                                      "reclaimPolicy":      { "type": "string" },
+                                      "storageParameters":  { "type": "object" },
+                                      "allowVolumeExpansion":  { "type": "boolean" }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "required": ["enabled"]
+                     }
+                  },
+                  "required": ["postgresVersion"]
+                }
+              },
+              "required": ["user", "password"]
+            }
+          },
+          "required": ["image", "db"]
+        },
+        "serverName": { "type": "string" },
+        "hostNames": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "timeZone": { "type": "string" },
+        "migration": {
+          "type": "object",
+          "properties": {
+            "skipCheck": { "type": "boolean" },
+            "realmName": { "type": "string" },
+            "authoringServer": {
+              "type": "object",
+              "properties": {
+                "base":   { "type": "string" },
+                "fhir": { "type": "string" }
+              }
+            },
+            "productionServer": {
+              "type": "object",
+              "properties": {
+                "base":   { "type": "string" },
+                "fhir": { "type": "string" }
+              }
+            },
+            "syndicationServer": {
+              "type": "object",
+              "properties": {
+                "base":   { "type": "string" }
+              }
+            },
+            "clientSecrets": {
+              "type": "object",
+              "properties": {
+                "releasePromotion": { "type": "string" },
+                "shrimp":           { "type": "string" },
+                "syndicationRead":  { "type": "string" },
+                "indexSyndication": { "type": "string" },
+                "bundleImport":     { "type": "string" },
+                "ontoUi":           { "type": "string" }
+              }
+            }
+          },
+          "required": ["skipCheck"]
+        },
+        "admin": {
+          "type": "object",
+          "properties": {
+            "user":     { "type": "string" },
+            "password": { "type": "string" }
+          }
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "port":    { "type": "integer" }
+          }
+        },
+        "certmanager": {
+          "type": "object",
+          "properties": {
+            "enabled":           { "type": "boolean" },
+            "clusterIssuerName": { "type": "string" },
+            "email":             { "type": "string", "format": "email" }
+          }
+        },
+        "tls": {
+          "type": "object",
+          "properties": {
+            "enabled":          { "type": "boolean" },
+            "certRef":          { "type": "string" }
+          }
+        },
+        "gateway": {
+          "type": "object",
+          "properties": {
+            "enabled":             { "type": "boolean" },
+            "listenerPortSecure":  { "type": ["integer","string"] },
+            "annotations":         { "type": "object" },
+            "infrastructureAnnotations": { "type": "object" },
+            "className":           { "type": "string" },
+            "requestTimeout":      {
+                                     "type": "string",
+                                     "pattern": "^([0-9]{1,5}(h|m|s|ms)){1,4}$",
+                                     "description": "duration strings like '1h', '30m', '15s', '100ms', up to 4 segments"
+                                   }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled":     { "type": "boolean" },
+            "annotations": { "type": "object" },
+            "className":   { "type": "string" }
+          }
+        }
+      },
+      "required": ["deployment","serverName","hostNames"]
+    },
+    "envoygateway": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "object",
+          "properties": {
+            "install":  { "type": "boolean" }
+          }
+        },
+        "healthAndMetrics": {
+          "type": "object",
+          "properties": {
+            "hideEndpoints":  { "type": "boolean" },
+            "metricsPath":    { "type": "string" },
+            "healthPath":     { "type": "string" }
+          }
+        },
+        "controlPlaneNamespace": { "type": "string" },
+        "servicemonitor": {
+          "type": "object",
+          "properties": {
+            "enabled":    { "type": "boolean" },
+            "port":       { "type": ["integer","string"] },
+            "path":       { "type": "string" },
+            "interval":   { "type": "string",  "pattern": "^([0-9]{1,5}(h|m|s)){1,4}$"}
+          }
+        },
+        "rateLimit": {
+          "type": "object",
+          "properties": {
+            "enabled":    { "type": "boolean" },
+            "requests":   { "type": "integer" },
+            "unit":       { "type": "string", "enum": ["Second","Minute","Hour","Day","Month","Year"] }
+          }
+        }
+      }
+    },
+    "nginx-ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "controller": {
+          "type": "object",
+          "properties": {
+            "ingressClass": {
+              "type": "object",
+              "properties": {
+                "create": { "type": "boolean" },
+                "name":   { "type": "string" }
+              }
+            },
+            "ingressClassByName": { "type": "boolean" }
+          }
+        }
+      },
+      "required": ["enabled"]
+    }
+  },
+  "required": ["ontocloak"]
+}
