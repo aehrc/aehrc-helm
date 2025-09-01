@@ -1,0 +1,71 @@
+azure:
+  dns:
+    dnsName: atomio-test
+atomio:
+  image: ontoserver.azurecr.io/atomio:atomio-20250107.3
+  hostName: atomio-test.australiaeast.cloudapp.azure.com
+  timeZone: Australia/Brisbane
+  ingress:
+    enabled: false
+  gateway:
+    className: envoy-gateway-class
+    enabled: true
+    route:
+      hostNames:
+        - atomio-test.australiaeast.cloudapp.azure.com
+  tolerations:
+    - key: "kubernetes.azure.com/scalesetpriority"
+      operator: "Equal"
+      value: "spot"
+      effect: "NoSchedule"
+  persistence:
+    enabled: false
+  client:
+    urlWhitelist: https://atomio-test.australiaeast.cloudapp.azure.com,https://genomics.ontoserver.csiro.au,https://api.healthterminologies.gov.au
+  cors:
+    allowedOriginPatterns: '*'
+  security:
+    enabled: true
+    hstsEnabled: false
+    issuerUri: https://auth.ontoserver.csiro.au/auth/realms/aehrc
+    audience: https://synd.ontoserver.csiro.au
+    client:
+      0:
+        url_prefix: https://atomio-test.australiaeast.cloudapp.azure.com
+        client_id: <path:acl_vlt_od221174/kv/data/atomio#atomio_synd_client_id>
+        token_url: https://auth.ontoserver.csiro.au/auth/realms/aehrc/protocol/openid-connect/token
+        client_secret: <path:acl_vlt_od221174/kv/data/atomio#atomio_synd_client_secret>
+      1:
+        url_prefix: https://api.healthterminologies.gov.au
+        client_id: <path:acl_vlt_od221174/kv/data/atomio#ncts_client_id>
+        token_url: https://api.healthterminologies.gov.au/oauth2/token
+        client_secret: <path:acl_vlt_od221174/kv/data/atomio#ncts_client_secret>
+      2:
+        token_url: https://ontology.nhs.uk/authorisation/auth/realms/nhs-digital-terminology/protocol/openid-connect/token
+        url_prefix : https://ontology.nhs.uk
+        client_id: <path:acl_vlt_od221174/kv/data/atomio#ontology_uk_client_id>
+        client_secret: <path:acl_vlt_od221174/kv/data/atomio#ontology_uk_client_secret>
+  resources:
+    cpu: 100m
+    memory: 1500M
+    maxHeapSize: 1500M
+  proxy:
+    maxBodySize: 5Gi # Envoy G not g
+    maxTempFileSize: 5368709120
+    requestTimeout: "120s"
+    sendTimeout: "120s"
+  certmanager:
+    issuer: letsencrypt-gateway
+  serviceMonitor:
+    enabled: false
+  openTelemetry:
+    enabled: false
+
+  sentry:
+    dsn: https://968151801e7f4e1d9f4cbef9f26fb97e@o144408.ingest.sentry.io/5462903
+    environment: test
+    servername: atomio-test.australiaeast.cloudapp.azure.com
+  config:
+    logging.level.au.csiro.atomio: DEBUG
+    logging.level.org.springframework.security: DEBUG
+
