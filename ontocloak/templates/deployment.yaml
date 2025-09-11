@@ -11,6 +11,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  replicas: {{ .Values.ontocloak.deployment.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-ontocloak
@@ -145,21 +146,21 @@ spec:
           livenessProbe:
             httpGet:
               path: /auth/health/live
-              port: 8080
+              port: 9000
             initialDelaySeconds: 50
             periodSeconds: 5
             failureThreshold: 10
           readinessProbe:
             httpGet:
               path: /auth/health/ready
-              port: 8080
+              port: 9000
             initialDelaySeconds: 0
             periodSeconds: 5
             failureThreshold: 3
           startupProbe:
             httpGet:
               path: /auth/health/started
-              port: 8080
+              port: 9000
             initialDelaySeconds: 0
             periodSeconds: 5
             failureThreshold: 120
@@ -173,7 +174,8 @@ spec:
           args:
             - start
             - --hostname={{ .Values.ontocloak.serverName }}
-            - --proxy edge
+            - --proxy-headers=xforwarded
+            - --http-enabled=true
             - --optimized
           env:
             - name: TZ

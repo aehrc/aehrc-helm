@@ -10,5 +10,5 @@ dependencies:
     repository: https://helm.nginx.com/stable
   - name: gateway-helm
     condition: envoygateway.controller.install
-    version: v1.4.1
+    version: v1.5.0
     repository: oci://docker.io/envoyproxy
