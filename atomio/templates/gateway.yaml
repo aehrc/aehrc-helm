@@ -17,7 +17,7 @@ spec:
       {{- if .Values.azure.dns.pipName }}
       service.beta.kubernetes.io/azure-pip-name: {{ .Values.azure.dns.pipName }}
       {{- else }}
-      service.beta.kubernetes.io/azure-dns-label-name: {{ .Values.azure.dnsName }}
+      service.beta.kubernetes.io/azure-dns-label-name: {{ .Values.azure.dns.dnsName }}
       {{- end }}
       {{- end }}
   listeners:
