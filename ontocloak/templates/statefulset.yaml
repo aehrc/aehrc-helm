@@ -1,0 +1,97 @@
+{{ if not .Values.ontocloak.deployment.db.external.enabled }}
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-ontocloak-db-deployment
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-ontocloak-db
+  strategy:
+    type: {{ .Values.ontocloak.deployment.db.provided.deploymentStrategy }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-ontocloak-db
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-ontocloak-db
+          image: postgres:{{ .Values.ontocloak.deployment.db.provided.postgresVersion }}
+          resources:
+            requests:
+              cpu: {{ .Values.ontocloak.deployment.db.provided.resources.requests.cpu }}
+              memory: {{ .Values.ontocloak.deployment.db.provided.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.ontocloak.deployment.resources.limits.cpu }}
+              memory: {{ .Values.ontocloak.deployment.resources.limits.memory }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: LANG
+              value: en_US.UTF-8
+            - name: LANGUAGE
+              value: en_US:en
+            - name: LC_ALL
+              value: en_US.UTF-8
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
+            - name: TZ
+              value: {{ .Values.ontocloak.timeZone }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            {{- if .Values.ontocloak.deployment.db.provided.persistence.enabled }}
+            - name: {{ .Release.Name }}-ontocloak-db-cluster
+              mountPath: /var/lib/postgresql/data
+            {{- end }}
+            {{- if not .Values.ontocloak.migration.skipCheck }}
+            - name: {{ .Release.Name }}-ontocloak-db-init
+              mountPath: /docker-entrypoint-initdb.d
+            {{- end }}
+      {{- if .Values.ontocloak.highPriority }}
+      priorityClassName: high-priority
+      {{- end }}
+      volumes:
+        - name: {{ .Release.Name }}-ontocloak-db-init
+          configMap:
+            name: {{ .Release.Name }}-ontocloak-db-init
+      {{- if .Values.ontocloak.deployment.db.provided.tolerations }}
+      tolerations: {{ toJson .Values.ontocloak.deployment.db.provided.tolerations }}
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Release.Name }}-ontocloak-db-cluster
+      spec:
+        {{- if .Values.ontocloak.deployment.db.provided.persistence.config.existingVolume.enabled }}
+        volumeName: {{ .Values.ontocloak.deployment.db.provided.persistence.config.existingVolume.name }}
+        {{- else }}
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: "{{ required "ontocloak.deployment.db.provided.persistence.config.diskSize is required" .Values.ontocloak.deployment.db.provided.persistence.config.diskSize }}"
+        {{- if .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.enabled }}
+        storageClassName: {{ .Release.Name }}-ontocloak-files
+        {{- else }}
+        storageClassName: {{ .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.name }}
+        {{- end }}
+        {{- end }}
+{{- if not .Values.ontocloak.migration.skipCheck }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ontocloak-db-init
+data:
+  init-db.sh: {{ tpl (.Files.Get "configuration/init-db.sh") . | quote }}
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-ontocloak-db-secret
+data:
+  username: {{ .Values.ontocloak.deployment.db.user | b64enc }}
+  password: {{ .Values.ontocloak.deployment.db.password | b64enc }}

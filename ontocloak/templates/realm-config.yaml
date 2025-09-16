@@ -1,6 +1,8 @@
+{{- if not .Values.ontocloak.migration.skipCheck }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-ontocloak-realm-config
 data:
   realm.json: {{ tpl (.Files.Get "configuration/realm.json") . | quote }}
+{{- end }}

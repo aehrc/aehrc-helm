@@ -1,92 +1,268 @@
 ontocloak:
-  # image: [Docker image repository]
-  # hostName: [host name]
-  realmName: ontocloak-realm # realmName must be url safe
+
+  ## @section Server settings
+  ## @param ontocloak.serverName                          Server hostname for Ontocloak service
+  serverName: localhost
+  ## @param ontocloak.hostNames                           List of hostnames for ingress/gateway
+  hostNames:
+    - localhost
+  ## @param ontocloak.timeZone                            Time zone for realm (e.g., Australia/Brisbane)
   timeZone: Australia/Brisbane
-  postgresTag: 12.2
-  persistence:
-    enabled: false
-    # diskName: [Azure Disk name]
-    # diskUri: [Azure Disk URI]
-  migration:
-    enabled: false
-    strategy: IGNORE_EXISTING
-  authoringServer:
-    base: [authoring server base URL]
-    fhir: [authoring server FHIR endpoint]
-  productionServer:
-    base: [production server base URL]
-    fhir: [production server FHIR endpoint]
-  syndicationServer:
-    base: [syndication server base URL]
-  clientSecrets:
-    releasePromotion: password
-    shrimp: password
-    syndicationRead: password
-    indexSyndication: password
-    bundleImport: password
-    ontoUi: password
-  database:
-    external: false
-  #  host: [host name of external database]
-    database: authorisation
-    user: authorisation
-    password: password
-    deployment:
-      strategy: RollingUpdate
   admin:
+    ## @param ontocloak.admin.user                        Admin username - provide it on command line, do not commit to git
     user: admin
+    ## @param ontocloak.admin.password                    Admin password - provide it on command line, do not commit to git
     password: password
+
+  ## @section Deployment
+  deployment:
+    ## @param ontocloak.deployment.kc_sh_path          Full path to kc.sh script within Keycloak image
+    kc_sh_path: /opt/keycloak/bin/kc.sh
+    ## @param ontocloak.deployment.annotations         Controller manifest annotations
+    annotations: {}
+    ## @param ontocloak.deployment.labels              Controller manifest labels
+    labels: {}
+    ## @param ontocloak.deployment.podAnnotations      Ontocloak pod annotations
+    podAnnotations: {}
+    ## @param ontocloak.deployment.podLabels           Ontocloak pod labels
+    podLabels: {}
+    ## @param ontocloak.deployment.image               Container image for Ontocloak
+    image: quay.io/aehrc/ontocloak:4
+    ## @param ontocloak.deployment.imagePullPolicy     Image pull policy
+    imagePullPolicy: Always
+    ## @param ontocloak.deployment.imagePullSecrets    Secrets for pulling image
+    imagePullSecrets: []
+    ## @param ontocloak.deployment.replicas            Number of replicas (max 1, set 0 to disable deployment)
+    replicas: 1
+    ## @param ontocloak.deployment.deploymentStrategy  K8s update strategy for Ontocloak Pod
+    deploymentStrategy: RollingUpdate
+    resources:
+      requests:
+        ## @param ontocloak.deployment.resources.requests.cpu     CPU request for Ontocloak Pod (in millicores)
+        cpu: 500m
+        ## @param ontocloak.deployment.resources.requests.memory  Memory request for Ontocloak Pod
+        memory: 1Gi
+      limits:
+        ## @param ontocloak.deployment.resources.limits.cpu     CPU limits for Ontocloak Pod (in millicores)
+        cpu: 500m
+        ## @param ontocloak.deployment.resources.limits.memory  Memory limits for Ontocloak Pod
+        memory: 1Gi
+    ## @param ontocloak.deployment.tolerations         Enable Pod tolerations
+    tolerations: []
+    db:
+      ## @param ontocloak.deployment.db.user                DB user (provided at runtime)
+      user: username
+      ## @param ontocloak.deployment.db.password            DB password (provided at runtime)
+      password: password
+      ## @param ontocloak.deployment.db.database Database name
+      database: ontocloak
+      ## @param ontocloak.deployment.db.external.enabled    Enable external Postgres instead of provided
+      external:
+        enabled: false
+        ## @param ontocloak.deployment.db.external.hostName External DB host name
+        hostName: ""
+      provided:
+        ## @param ontocloak.deployment.db.provided.deploymentStrategy  Update strategy for provided Postgres Pod
+        deploymentStrategy: RollingUpdate
+        ## @param ontocloak.deployment.db.provided.postgresVersion     Postgres version for provided database
+        postgresVersion: 12
+        resources:
+          requests:
+            ## @param ontocloak.deployment.db.provided.resources.requests.cpu       CPU request for Ontocloak Pod (in millicores)
+            cpu: 500m
+            ## @param ontocloak.deployment.db.provided.resources.requests.memory    Memory request for Ontocloak Pod
+            memory: 1Gi
+          limits:
+            ## @param ontocloak.deployment.db.provided.resources.limits.cpu  CPU limits for Ontocloak Pod (in millicores)
+            cpu: 500m
+            ## @param ontocloak.deployment.db.provided.resources.limits.memory       Memory limits for Ontocloak Pod
+            memory: 1Gi
+        ## @param ontocloak.deployment.db.provided.tolerations         Enable Pod tolerations
+        tolerations: []
+        persistence:
+          ## @param ontocloak.deployment.db.provided.persistence.enabled           Enable PVC for databse files - Ignored if database is external
+          enabled: true
+          config:
+            ## @param ontocloak.deployment.db.provided.persistence.config.diskSize           Size of DB disk
+            diskSize: 10Gi
+            existingVolume:
+              ## @param ontocloak.deployment.db.provided.persistence.config.existingVolume.enabled  Bind to existing PV
+              enabled: false
+              ## @param ontocloak.deployment.db.provided.persistence.config.existingVolume.name     Name of existing PV
+              name: ""
+            storageClass:
+              ## @param ontocloak.deployment.db.provided.persistence.config.storageClass.name       StorageClass name
+              name: default
+              provided:
+                ## @param ontocloak.deployment.db.provided.persistence.config.storageClass.provided.enabled               Use provided StorageClass
+                enabled: false
+                ## @param ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageProvisioner    CSI driver name
+                storageProvisioner: disk.csi.azure.com
+                ## @param ontocloak.deployment.db.provided.persistence.config.storageClass.provided.reclaimPolicy         Reclaim policy (Retain/Delete)
+                reclaimPolicy: Retain
+                ## @skip ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageParameters      Storage class parameters
+                storageParameters:
+                  ## @skip ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageParameters.skuName
+                  skuName: Premium_LRS
+                  ## @skip ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageParameters.kind
+                  kind: Managed
+                ## @param ontocloak.deployment.db.provided.persistence.config.storageClass.provided.allowVolumeExpansion  Enable volume expansion
+                allowVolumeExpansion: true
+
+  ## @section Migration/Server initialisation
+  #########################################################################################################################################
+  # Use this section to set up a default realm for the first start. After first startup you can set ontocloak.migration.skipCheck to true #
+  #########################################################################################################################################
+  migration:
+    ## @param ontocloak.migration.skipCheck                           Skip Database Check during startup - Leave it false if you run migration on startup
+    skipCheck: false
+    ## @param ontocloak.migration.realmName                           Keycloak realm name (URL-safe)
+    realmName: ontocloak-realm
+    authoringServer:
+      ## @param ontocloak.migration.authoringServer.base            Base URL for authoring server
+      base: ""
+      ## @param ontocloak.migration.authoringServer.fhir            FHIR API endpoint for authoring server
+      fhir: ""
+    productionServer:
+      ## @param ontocloak.migration.productionServer.base           Base URL for production server
+      base: ""
+      ## @param ontocloak.migration.productionServer.fhir           FHIR API endpoint for production server
+      fhir: ""
+    syndicationServer:
+      ## @param ontocloak.migration.syndicationServer.base          Base URL for syndication server
+      base: ""
+    clientSecrets:
+      ## @param ontocloak.migration.clientSecrets.releasePromotion  Secret for release promotion client - provide it on command line, do not commit to git
+      releasePromotion: password
+      ## @param ontocloak.migration.clientSecrets.shrimp            Secret for shrimp client - provide it on command line, do not commit to git
+      shrimp: password
+      ## @param ontocloak.migration.clientSecrets.syndicationRead   Secret for syndication read client - provide it on command line, do not commit to git
+      syndicationRead: password
+      ## @param ontocloak.migration.clientSecrets.indexSyndication  Secret for index syndication client - provide it on command line, do not commit to git
+      indexSyndication: password
+      ## @param ontocloak.migration.clientSecrets.bundleImport      Secret for bundle import client - provide it on command line, do not commit to git
+      bundleImport: password
+      ## @param ontocloak.migration.clientSecrets.ontoUi            Secret for OntoUI client - provide it on command line, do not commit to git
+      ontoUi: password
+
+  ## @section Configuration to include in the ontocloak.properties file
   config:
+    # User Agreement settings
+    # https://ontoserver.csiro.au/site/technical-documentation/ontocloak-documentation/manage-user-agreements/
+    ## @param ontocloak.config.ontocloak.action.agreement.enduser.version       Enduser Agreement Version
     ontocloak.action.agreement.enduser.version: "1.0"
+    ## @param ontocloak.config.ontocloak.action.agreement.enduser.title         Enduser Agreement Title
     ontocloak.action.agreement.enduser.title: Acme End User Agreement v1.0
+    ## @param ontocloak.config.ontocloak.action.agreement.enduser.group          Enduser Group
     ontocloak.action.agreement.enduser.group: End users
+    ## @param ontocloak.config.ontocloak.action.agreement.enduser.html_text      Enduser Agreement Text
     ontocloak.action.agreement.enduser.html_text: example
+    ## @param ontocloak.config.ontocloak.action.agreement.customer.version       Customer Agreement Version
     ontocloak.action.agreement.customer.version: "1.0"
+    ## @param ontocloak.config.ontocloak.action.agreement.customer.title         Customer Agreement Title
     ontocloak.action.agreement.customer.title: Acme Customer Agreement v1.0
+    ## @param ontocloak.config.ontocloak.action.agreement.customer.group         Customer Agreement Group
     ontocloak.action.agreement.customer.group: Customers
+    ## @param ontocloak.config.ontocloak.action.agreement.customer.html_text     Customer Agreement Text
     ontocloak.action.agreement.customer.html_text: example
-  resources:
-    cpu: 500m
-    memory: 1Gi
-  tolerations: false
-  highPriority: false
 
-certmanager:
-  enabled: true
+  ## @section Server Environment variables
+  ## @param ontocloak.env                                 Additional Ontocloak environment variables
+  env: {}
 
-nginx-ingress:
-  controller:
-    enableSnippets: true
-    enableCertManager: true
-    ingressClassResource:
-      name: ontocloak-nginx
-      controllerValue: 'k8s.io/ontocloak-nginx'
-      enabled: true
-    service:
-      annotations:
-        service.beta.kubernetes.io/azure-dns-label-name: ontocloak
-    ingressClass: 'ontocloak-nginx'
-    ingressClassByName: true
-
-ingress:
-  #class: azure/application-gateway
-  #class: alb
-  class: ontocloak-nginx
-  nginx:
+  ## @section Cert-Manager
+  certmanager:
+    ## @param ontocloak.certmanager.enabled               Enable cert-manager
     enabled: true
-    sslRedirect: false
-  appgw:
-    # Change this to actual values if using Application Gateway Ingress Controller
-    # sslcertificate: "name-of-appgw-installed-certificate"
-    requesttimeout: 60
-    className: azure-application-gateway
-  alb:
-    # loadBalancerGroup: ontoserver
-    # Change this to actual values if using ALB Ingress controller
-    # certificateArn: arn:aws:acm:location:tenancy:certificate/id
+    ## @param ontocloak.certmanager.clusterIssuerName     ClusterIssuer name - use default if this is empty
+    clusterIssuerName: ""
+    ## @param ontocloak.certmanager.email                 Notification email for ACME
+    email: noreply@example.com
+  ## @section TLS settings
+  tls:
+    ## @param ontocloak.tls.enabled                       Enable TLS Termination
+    enabled: true
+    ## @param ontocloak.tls.certRef                       Reference to TLS certificate secret
+    certRef: "ontocloak-tls"
+  ## @section Gateway API settings
+  gateway:
+    ## @param ontocloak.gateway.enabled                   Enable Gateway API
+    enabled: true
+    ## @param ontocloak.gateway.listenerPortSecure        Secure listener port -  Depends on the gateway class - Traefik is 8443
+    listenerPortSecure: 443
+    ## @param ontocloak.gateway.annotations               Gateway annotations
+    annotations: {}
+    ## @param ontocloak.gateway.infrastructureAnnotations Infrastructure annotations
+    infrastructureAnnotations: {}
+    ## @param ontocloak.gateway.className                 GatewayClass name
+    className: envoy-gateway-controller-class
+    ## @param ontocloak.gateway.requestTimeout            Request timeout duration
+    requestTimeout: 5s
+  ## @section Ingress resource settings
+  ingress:
+    ## @param ontocloak.ingress.enabled                   Enable ingress for Ontocloak
+    enabled: false
+    ## @param ontocloak.ingress.annotations               Ingress resource annotations
+    annotations: {}
+    ## @param ontocloak.ingress.className                 Ingress class name (e.g., nginx, alb)
+    className: ontocloak-nginx
+    #className: azure/application-gateway
+    #className: alb
+  ## @section Prometheus metrics
+  metrics:
+    ## @param ontocloak.metrics.enabled                   Enable Prometheus Metrics
+    enabled: false
+    ## @param ontocloak.metrics.port                      Prometheus Metrics port
+    port: 9000
 
-repoSecret:
-  enabled: false
-  #name: [reposecret]
-  #dockerconfigjson: [base64 configjson]
+## @section Include Envoy Gateway controller specific manifests
+envoygateway:
+  controller:
+    ## @param envoygateway.controller.install                  Install Envoy Gateway Controller
+    install: true
+  healthAndMetrics:
+    ## @param envoygateway.healthAndMetrics.hideEndpoints      Hide health and metrics endpoints via HTTPRouteFilter otherwise they are exposed
+    hideEndpoints: false
+    ## @param envoygateway.healthAndMetrics.metricsPath        Metrics endpoint url path
+    metricsPath: /auth/metrics
+    ## @param envoygateway.healthAndMetrics.healthPath         Health endpoint url path
+    healthPath: /auth/health
+  ## @param envoygateway.controlPlaneNamespace     Envoy Gateway controller's namespace
+  controlPlaneNamespace: envoy-gateway-system
+  servicemonitor:
+    ## @param envoygateway.servicemonitor.enabled  Enable Envoy Gateway Prometheus ServiceMonitor custom resource
+    enabled: false
+    ## @param envoygateway.servicemonitor.port     Envoy Gateway pod's metrics port - usually 9000 or named metrics
+    port: metrics
+    ## @param envoygateway.servicemonitor.path     Envoy Gateway pod's Prometheus metrics url path
+    path: /stats/prometheus
+    ## @param envoygateway.servicemonitor.interval Prometheus metrics update interval
+    interval: 15s
+  rateLimit:
+    ## @param envoygateway.rateLimit.enabled       Enable rate limiting for the gateway via BackendTrafficPolicy
+    enabled: false
+    # Per envoy data plane rate limit. If there are 2 data planes per gateway the limit will be 2 x 150 = 300 req/sec
+    ## @param envoygateway.rateLimit.requests      Envoy dataplane rate limit - amount of requests per unit
+    requests: 100
+    ## @param envoygateway.rateLimit.unit          Envoy dataplane rate limit unit Second/Minute/Hour/Day/Month/Year
+    unit: Second
+
+
+# F5 NGINX Ingress Controller Configuration
+## @section F5 nginx-ingress-controller settings
+nginx-ingress:
+  ## @param nginx-ingress.enabled                         Enable F5 nginx-ingress-controller
+  enabled: false  
+  controller:
+    ## @skip nginx-ingress.controller.enableSnippets
+    enableSnippets: true
+    ## @skip nginx-ingress.controller.enableCertManager
+    enableCertManager: true
+    # Create an ingress class with its own LoadBalancer
+    ingressClass:
+      ## @skip nginx-ingress.controller.ingressClass.create
+      create: true
+      ## @skip nginx-ingress.controller.ingressClass.name
+      name: ontocloak-nginx
+    ## @skip nginx-ingress.controller.ingressClassByName
+    ingressClassByName: true

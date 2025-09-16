@@ -1,0 +1,14 @@
+{{ if and (not .Values.ontocloak.deployment.db.external.enabled) .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.enabled }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Release.Name }}-ontocloak-files
+provisioner: {{ required "ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageProvisioner is required" .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageProvisioner }}
+reclaimPolicy: {{ required "ontocloak.deployment.db.provided.persistence.config.storageClass.provided.reclaimPolicy is required" .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.reclaimPolicy }}
+volumeBindingMode: WaitForFirstConsumer
+{{- if empty .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageParameters }}
+  {{- fail "Provide storage parameters in ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageParameters" }}
+{{- end }}
+parameters:  {{ toJson .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.storageParameters }}
+allowVolumeExpansion: {{ .Values.ontocloak.deployment.db.provided.persistence.config.storageClass.provided.allowVolumeExpansion }}
+{{- end }}

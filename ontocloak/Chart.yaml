@@ -2,9 +2,13 @@ apiVersion: v2
 name: ontocloak
 description: A Helm chart for Ontocloak
 type: application
-version: 2.1.0
+version: 4.0.1
 dependencies:
   - name: nginx-ingress
-    condition: ingress.nginx.enabled
-    version: ^0.13.2
+    condition: nginx-ingress.enabled
+    version: 2.1.0
     repository: https://helm.nginx.com/stable
+  - name: gateway-helm
+    condition: envoygateway.controller.install
+    version: v1.5.0
+    repository: oci://docker.io/envoyproxy
