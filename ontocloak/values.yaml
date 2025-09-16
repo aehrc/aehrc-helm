@@ -174,8 +174,8 @@ ontocloak:
   certmanager:
     ## @param ontocloak.certmanager.enabled               Enable cert-manager
     enabled: true
-    ## @param ontocloak.certmanager.clusterIssuerName     ClusterIssuer name or prefix for Geteway's Issuer
-    clusterIssuerName: letsencrypt
+    ## @param ontocloak.certmanager.clusterIssuerName     ClusterIssuer name - use default if this is empty
+    clusterIssuerName: ""
     ## @param ontocloak.certmanager.email                 Notification email for ACME
     email: noreply@example.com
   ## @section TLS settings

@@ -97,7 +97,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | Name                                      | Description                                       | Value                 |
 | ----------------------------------------- | ------------------------------------------------- | --------------------- |
 | `ontocloak.certmanager.enabled`           | Enable cert-manager                               | `true`                |
-| `ontocloak.certmanager.clusterIssuerName` | ClusterIssuer name or prefix for Geteway's Issuer | `letsencrypt`         |
+| `ontocloak.certmanager.clusterIssuerName` | ClusterIssuer name - use default if this is empty | `""`                  |
 | `ontocloak.certmanager.email`             | Notification email for ACME                       | `noreply@example.com` |
 
 ### TLS settings
@@ -147,7 +147,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `envoygateway.servicemonitor.path`            | Envoy Gateway pod's Prometheus metrics url path                                  | `/stats/prometheus`    |
 | `envoygateway.servicemonitor.interval`        | Prometheus metrics update interval                                               | `15s`                  |
 | `envoygateway.rateLimit.enabled`              | Enable rate limiting for the gateway via BackendTrafficPolicy                    | `false`                |
-| `envoygateway.rateLimit.requests`             | Envoy dataplane rate limit - amount of requests per unit                         | `10`                   |
+| `envoygateway.rateLimit.requests`             | Envoy dataplane rate limit - amount of requests per unit                         | `100`                  |
 | `envoygateway.rateLimit.unit`                 | Envoy dataplane rate limit unit Second/Minute/Hour/Day/Month/Year                | `Second`               |
 
 ### F5 nginx-ingress-controller settings
