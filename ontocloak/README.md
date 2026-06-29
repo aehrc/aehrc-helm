@@ -11,8 +11,19 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `ontocloak.serverName`     | Server hostname for Ontocloak service                             | `localhost`          |
 | `ontocloak.hostNames`      | List of hostnames for ingress/gateway                             | `["localhost"]`      |
 | `ontocloak.timeZone`       | Time zone for realm (e.g., Australia/Brisbane)                    | `Australia/Brisbane` |
-| `ontocloak.admin.user`     | Admin username - provide it on command line, do not commit to git | `admin`              |
-| `ontocloak.admin.password` | Admin password - provide it on command line, do not commit to git | `password`           |
+| `ontocloak.admin.user`                                               | Admin username - provide it on command line, do not commit to git | `admin`                                  |
+| `ontocloak.admin.password`                                           | Admin password - provide it on command line, do not commit to git | `password`                               |
+| `ontocloak.admin.secretKeys.user`                                    | Secret key containing the admin username                          | `username`                               |
+| `ontocloak.admin.secretKeys.password`                                | Secret key containing the admin password                          | `password`                               |
+| `ontocloak.admin.existingSecret.enabled`                             | Use an existing Secret for admin credentials                      | `false`                                  |
+| `ontocloak.admin.existingSecret.name`                                | Existing Secret name for admin credentials                        | `""`                                     |
+| `ontocloak.admin.externalSecret.enabled`                             | Create an ExternalSecret for admin credentials                    | `false`                                  |
+| `ontocloak.admin.externalSecret.refreshInterval`                     | ExternalSecret refresh interval                                   | `1h`                                     |
+| `ontocloak.admin.externalSecret.secretStoreRef.kind`                 | ExternalSecret store kind                                         | `ClusterSecretStore`                     |
+| `ontocloak.admin.externalSecret.secretStoreRef.name`                 | ExternalSecret store name                                         | `vault-backend`                          |
+| `ontocloak.admin.externalSecret.remoteRef.key`                       | Vault remote secret key                                           | `acl_vlt_od221174/kv/data/fhir-smart-stack` |
+| `ontocloak.admin.externalSecret.remoteRef.userProperty`              | Vault property containing the admin username                      | `ontocloak_admin_user`                   |
+| `ontocloak.admin.externalSecret.remoteRef.passwordProperty`          | Vault property containing the admin password                      | `ontocloak_admin_password`               |
 
 ### Deployment
 
@@ -35,6 +46,17 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `ontocloak.deployment.tolerations`                                                               | Enable Pod tolerations                                         | `[]`                        |
 | `ontocloak.deployment.db.user`                                                                   | DB user (provided at runtime)                                  | `username`                  |
 | `ontocloak.deployment.db.password`                                                               | DB password (provided at runtime)                              | `password`                  |
+| `ontocloak.deployment.db.secretKeys.user`                                                        | Secret key containing the DB username                          | `username`                  |
+| `ontocloak.deployment.db.secretKeys.password`                                                    | Secret key containing the DB password                          | `password`                  |
+| `ontocloak.deployment.db.existingSecret.enabled`                                                 | Use an existing Secret for DB credentials                      | `false`                     |
+| `ontocloak.deployment.db.existingSecret.name`                                                    | Existing Secret name for DB credentials                        | `""`                        |
+| `ontocloak.deployment.db.externalSecret.enabled`                                                 | Create an ExternalSecret for DB credentials                    | `false`                     |
+| `ontocloak.deployment.db.externalSecret.refreshInterval`                                         | ExternalSecret refresh interval                               | `1h`                        |
+| `ontocloak.deployment.db.externalSecret.secretStoreRef.kind`                                     | ExternalSecret store kind                                     | `ClusterSecretStore`        |
+| `ontocloak.deployment.db.externalSecret.secretStoreRef.name`                                     | ExternalSecret store name                                     | `vault-backend`             |
+| `ontocloak.deployment.db.externalSecret.remoteRef.key`                                           | Vault remote secret key                                       | `acl_vlt_od221174/kv/data/fhir-smart-stack` |
+| `ontocloak.deployment.db.externalSecret.remoteRef.userProperty`                                  | Vault property containing the DB username                     | `ontocloak_db_user`         |
+| `ontocloak.deployment.db.externalSecret.remoteRef.passwordProperty`                              | Vault property containing the DB password                     | `ontocloak_db_password`     |
 | `ontocloak.deployment.db.database`                                                               | Database name                                                  | `ontocloak`                 |
 | `ontocloak.deployment.db.external.enabled`                                                       | Enable external Postgres instead of provided                   | `false`                     |
 | `ontocloak.deployment.db.external.hostName`                                                      | External DB host name                                          | `""`                        |

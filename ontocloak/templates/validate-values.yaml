@@ -21,3 +21,16 @@
 {{- if and  $ngi.enabled  (not .Values.ontocloak.ingress.enabled) }}
   {{- fail "Don't include nginx-ingress-controller when Ingress is disabled!" }}
 {{- end }}
+
+{{- if and .Values.ontocloak.admin.existingSecret.enabled .Values.ontocloak.admin.externalSecret.enabled }}
+  {{- fail "Choose either ontocloak.admin.existingSecret or ontocloak.admin.externalSecret, not both!" }}
+{{- end }}
+{{- if and .Values.ontocloak.admin.existingSecret.enabled (not .Values.ontocloak.admin.existingSecret.name) }}
+  {{- fail "ontocloak.admin.existingSecret.name is required when ontocloak.admin.existingSecret.enabled is true" }}
+{{- end }}
+{{- if and .Values.ontocloak.deployment.db.existingSecret.enabled .Values.ontocloak.deployment.db.externalSecret.enabled }}
+  {{- fail "Choose either ontocloak.deployment.db.existingSecret or ontocloak.deployment.db.externalSecret, not both!" }}
+{{- end }}
+{{- if and .Values.ontocloak.deployment.db.existingSecret.enabled (not .Values.ontocloak.deployment.db.existingSecret.name) }}
+  {{- fail "ontocloak.deployment.db.existingSecret.name is required when ontocloak.deployment.db.existingSecret.enabled is true" }}
+{{- end }}

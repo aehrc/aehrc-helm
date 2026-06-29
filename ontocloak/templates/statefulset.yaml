@@ -38,6 +38,18 @@ spec:
               value: trust
             - name: TZ
               value: {{ .Values.ontocloak.timeZone }}
+            - name: ONTOCLOAK_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbUserKey" . }}
+            - name: ONTOCLOAK_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbPasswordKey" . }}
+            - name: ONTOCLOAK_DB_DATABASE
+              value: {{ .Values.ontocloak.deployment.db.database }}
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:
@@ -87,11 +99,13 @@ data:
   init-db.sh: {{ tpl (.Files.Get "configuration/init-db.sh") . | quote }}
 {{- end }}
 {{- end }}
+{{- if and (not .Values.ontocloak.deployment.db.existingSecret.enabled) (not .Values.ontocloak.deployment.db.externalSecret.enabled) }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-ontocloak-db-secret
+  name: {{ include "ontocloak.dbSecretName" . }}
 data:
-  username: {{ .Values.ontocloak.deployment.db.user | b64enc }}
-  password: {{ .Values.ontocloak.deployment.db.password | b64enc }}
+  {{ include "ontocloak.dbUserKey" . }}: {{ .Values.ontocloak.deployment.db.user | b64enc }}
+  {{ include "ontocloak.dbPasswordKey" . }}: {{ .Values.ontocloak.deployment.db.password | b64enc }}
+{{- end }}

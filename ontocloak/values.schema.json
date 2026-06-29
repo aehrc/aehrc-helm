@@ -49,6 +49,48 @@
               "properties": {
                 "user":            { "type": "string" },
                 "password":        { "type": "string" },
+                "database":        { "type": "string" },
+                "secretKeys": {
+                  "type": "object",
+                  "properties": {
+                    "user":     { "type": "string" },
+                    "password": { "type": "string" }
+                  },
+                  "required": ["user", "password"]
+                },
+                "existingSecret": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": { "type": "boolean" },
+                    "name":    { "type": "string" }
+                  },
+                  "required": ["enabled", "name"]
+                },
+                "externalSecret": {
+                  "type": "object",
+                  "properties": {
+                    "enabled":         { "type": "boolean" },
+                    "refreshInterval": { "type": "string" },
+                    "secretStoreRef": {
+                      "type": "object",
+                      "properties": {
+                        "kind": { "type": "string" },
+                        "name": { "type": "string" }
+                      },
+                      "required": ["kind", "name"]
+                    },
+                    "remoteRef": {
+                      "type": "object",
+                      "properties": {
+                        "key":              { "type": "string" },
+                        "userProperty":     { "type": "string" },
+                        "passwordProperty": { "type": "string" }
+                      },
+                      "required": ["key", "userProperty", "passwordProperty"]
+                    }
+                  },
+                  "required": ["enabled", "refreshInterval", "secretStoreRef", "remoteRef"]
+                },
                 "external":  {
                    "type": "object",
                    "properties": {
@@ -102,7 +144,7 @@
                   "required": ["postgresVersion"]
                 }
               },
-              "required": ["user", "password"]
+              "required": ["database"]
             }
           },
           "required": ["image", "db"]
@@ -156,7 +198,48 @@
           "type": "object",
           "properties": {
             "user":     { "type": "string" },
-            "password": { "type": "string" }
+            "password": { "type": "string" },
+            "secretKeys": {
+              "type": "object",
+              "properties": {
+                "user":     { "type": "string" },
+                "password": { "type": "string" }
+              },
+              "required": ["user", "password"]
+            },
+            "existingSecret": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "name":    { "type": "string" }
+              },
+              "required": ["enabled", "name"]
+            },
+            "externalSecret": {
+              "type": "object",
+              "properties": {
+                "enabled":         { "type": "boolean" },
+                "refreshInterval": { "type": "string" },
+                "secretStoreRef": {
+                  "type": "object",
+                  "properties": {
+                    "kind": { "type": "string" },
+                    "name": { "type": "string" }
+                  },
+                  "required": ["kind", "name"]
+                },
+                "remoteRef": {
+                  "type": "object",
+                  "properties": {
+                    "key":              { "type": "string" },
+                    "userProperty":     { "type": "string" },
+                    "passwordProperty": { "type": "string" }
+                  },
+                  "required": ["key", "userProperty", "passwordProperty"]
+                }
+              },
+              "required": ["enabled", "refreshInterval", "secretStoreRef", "remoteRef"]
+            }
           }
         },
         "config": {

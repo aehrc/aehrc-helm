@@ -54,14 +54,13 @@ spec:
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-secret
-                  key: username
-              value:
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbUserKey" . }}
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-secret
-                  key: password
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbPasswordKey" . }}
           args:
             - |
               set -e
@@ -107,21 +106,23 @@ spec:
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-secret
-                  key: username
-              value:
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbUserKey" . }}
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-secret
-                  key: password
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbPasswordKey" . }}
             - name: KEYCLOAK_ADMIN
-              value: {{ .Values.ontocloak.admin.user }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ontocloak.adminSecretName" . }}
+                  key: {{ include "ontocloak.adminUserKey" . }}
             - name: KEYCLOAK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-keycloak-password
-                  key: password                    
+                  name: {{ include "ontocloak.adminSecretName" . }}
+                  key: {{ include "ontocloak.adminPasswordKey" . }}
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -193,21 +194,23 @@ spec:
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-secret
-                  key: username
-              value:
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbUserKey" . }}
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-db-secret
-                  key: password
+                  name: {{ include "ontocloak.dbSecretName" . }}
+                  key: {{ include "ontocloak.dbPasswordKey" . }}
             - name: KEYCLOAK_ADMIN
-              value: {{ .Values.ontocloak.admin.user }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ontocloak.adminSecretName" . }}
+                  key: {{ include "ontocloak.adminUserKey" . }}
             - name: KEYCLOAK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-ontocloak-keycloak-password
-                  key: password
+                  name: {{ include "ontocloak.adminSecretName" . }}
+                  key: {{ include "ontocloak.adminPasswordKey" . }}
             {{- range $key, $value := .Values.ontocloak.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -237,10 +240,13 @@ spec:
       {{- if .Values.ontocloak.deployment.tolerations }}
       tolerations: {{ toJson .Values.ontocloak.deployment.tolerations }}
       {{- end }}
+{{- if and (not .Values.ontocloak.admin.existingSecret.enabled) (not .Values.ontocloak.admin.externalSecret.enabled) }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-ontocloak-keycloak-password
+  name: {{ include "ontocloak.adminSecretName" . }}
 data:
-  password: {{ .Values.ontocloak.admin.password | b64enc }}
+  {{ include "ontocloak.adminUserKey" . }}: {{ .Values.ontocloak.admin.user | b64enc }}
+  {{ include "ontocloak.adminPasswordKey" . }}: {{ .Values.ontocloak.admin.password | b64enc }}
+{{- end }}

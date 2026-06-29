@@ -13,6 +13,33 @@ ontocloak:
     user: admin
     ## @param ontocloak.admin.password                    Admin password - provide it on command line, do not commit to git
     password: password
+    secretKeys:
+      ## @param ontocloak.admin.secretKeys.user           Secret key containing the admin username
+      user: username
+      ## @param ontocloak.admin.secretKeys.password       Secret key containing the admin password
+      password: password
+    existingSecret:
+      ## @param ontocloak.admin.existingSecret.enabled    Use an existing Secret for admin credentials
+      enabled: false
+      ## @param ontocloak.admin.existingSecret.name       Existing Secret name for admin credentials
+      name: ""
+    externalSecret:
+      ## @param ontocloak.admin.externalSecret.enabled    Create an ExternalSecret for admin credentials
+      enabled: false
+      ## @param ontocloak.admin.externalSecret.refreshInterval ExternalSecret refresh interval
+      refreshInterval: 1h
+      secretStoreRef:
+        ## @param ontocloak.admin.externalSecret.secretStoreRef.kind ExternalSecret store kind
+        kind: ClusterSecretStore
+        ## @param ontocloak.admin.externalSecret.secretStoreRef.name ExternalSecret store name
+        name: vault-backend
+      remoteRef:
+        ## @param ontocloak.admin.externalSecret.remoteRef.key Vault remote secret key
+        key: acl_vlt_od221174/kv/data/fhir-smart-stack
+        ## @param ontocloak.admin.externalSecret.remoteRef.userProperty Vault property containing the admin username
+        userProperty: ontocloak_admin_user
+        ## @param ontocloak.admin.externalSecret.remoteRef.passwordProperty Vault property containing the admin password
+        passwordProperty: ontocloak_admin_password
 
   ## @section Deployment
   deployment:
@@ -54,6 +81,33 @@ ontocloak:
       user: username
       ## @param ontocloak.deployment.db.password            DB password (provided at runtime)
       password: password
+      secretKeys:
+        ## @param ontocloak.deployment.db.secretKeys.user   Secret key containing the DB username
+        user: username
+        ## @param ontocloak.deployment.db.secretKeys.password Secret key containing the DB password
+        password: password
+      existingSecret:
+        ## @param ontocloak.deployment.db.existingSecret.enabled Use an existing Secret for DB credentials
+        enabled: false
+        ## @param ontocloak.deployment.db.existingSecret.name Existing Secret name for DB credentials
+        name: ""
+      externalSecret:
+        ## @param ontocloak.deployment.db.externalSecret.enabled Create an ExternalSecret for DB credentials
+        enabled: false
+        ## @param ontocloak.deployment.db.externalSecret.refreshInterval ExternalSecret refresh interval
+        refreshInterval: 1h
+        secretStoreRef:
+          ## @param ontocloak.deployment.db.externalSecret.secretStoreRef.kind ExternalSecret store kind
+          kind: ClusterSecretStore
+          ## @param ontocloak.deployment.db.externalSecret.secretStoreRef.name ExternalSecret store name
+          name: vault-backend
+        remoteRef:
+          ## @param ontocloak.deployment.db.externalSecret.remoteRef.key Vault remote secret key
+          key: acl_vlt_od221174/kv/data/fhir-smart-stack
+          ## @param ontocloak.deployment.db.externalSecret.remoteRef.userProperty Vault property containing the DB username
+          userProperty: ontocloak_db_user
+          ## @param ontocloak.deployment.db.externalSecret.remoteRef.passwordProperty Vault property containing the DB password
+          passwordProperty: ontocloak_db_password
       ## @param ontocloak.deployment.db.database Database name
       database: ontocloak
       ## @param ontocloak.deployment.db.external.enabled    Enable external Postgres instead of provided
