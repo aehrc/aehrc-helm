@@ -21,7 +21,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `ontocloak.admin.externalSecret.refreshInterval`                     | ExternalSecret refresh interval                                   | `1h`                                     |
 | `ontocloak.admin.externalSecret.secretStoreRef.kind`                 | ExternalSecret store kind                                         | `ClusterSecretStore`                     |
 | `ontocloak.admin.externalSecret.secretStoreRef.name`                 | ExternalSecret store name                                         | `vault-backend`                          |
-| `ontocloak.admin.externalSecret.remoteRef.key`                       | Vault remote secret key                                           | `acl_vlt_od221174/kv/data/fhir-smart-stack` |
+| `ontocloak.admin.externalSecret.remoteRef.key`                       | Vault remote secret key                                           | `acl_vlt_od221174/kv/data/ontocloak`     |
 | `ontocloak.admin.externalSecret.remoteRef.userProperty`              | Vault property containing the admin username                      | `ontocloak_admin_user`                   |
 | `ontocloak.admin.externalSecret.remoteRef.passwordProperty`          | Vault property containing the admin password                      | `ontocloak_admin_password`               |
 
@@ -54,7 +54,7 @@ Helm chart for Ontocloak [https://ontoserver.csiro.au/site/our-solutions/ontoclo
 | `ontocloak.deployment.db.externalSecret.refreshInterval`                                         | ExternalSecret refresh interval                               | `1h`                        |
 | `ontocloak.deployment.db.externalSecret.secretStoreRef.kind`                                     | ExternalSecret store kind                                     | `ClusterSecretStore`        |
 | `ontocloak.deployment.db.externalSecret.secretStoreRef.name`                                     | ExternalSecret store name                                     | `vault-backend`             |
-| `ontocloak.deployment.db.externalSecret.remoteRef.key`                                           | Vault remote secret key                                       | `acl_vlt_od221174/kv/data/fhir-smart-stack` |
+| `ontocloak.deployment.db.externalSecret.remoteRef.key`                                           | Vault remote secret key                                       | `acl_vlt_od221174/kv/data/ontocloak` |
 | `ontocloak.deployment.db.externalSecret.remoteRef.userProperty`                                  | Vault property containing the DB username                     | `ontocloak_db_user`         |
 | `ontocloak.deployment.db.externalSecret.remoteRef.passwordProperty`                              | Vault property containing the DB password                     | `ontocloak_db_password`     |
 | `ontocloak.deployment.db.database`                                                               | Database name                                                  | `ontocloak`                 |
