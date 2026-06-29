@@ -113,12 +113,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "ontocloak.dbSecretName" . }}
                   key: {{ include "ontocloak.dbPasswordKey" . }}
-            - name: KEYCLOAK_ADMIN
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ontocloak.adminSecretName" . }}
                   key: {{ include "ontocloak.adminUserKey" . }}
-            - name: KEYCLOAK_ADMIN_PASSWORD
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ontocloak.adminSecretName" . }}
@@ -201,12 +201,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "ontocloak.dbSecretName" . }}
                   key: {{ include "ontocloak.dbPasswordKey" . }}
-            - name: KEYCLOAK_ADMIN
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ontocloak.adminSecretName" . }}
                   key: {{ include "ontocloak.adminUserKey" . }}
-            - name: KEYCLOAK_ADMIN_PASSWORD
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ontocloak.adminSecretName" . }}
