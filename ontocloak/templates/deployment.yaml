@@ -103,6 +103,8 @@ spec:
               value: {{ .Values.ontocloak.deployment.db.database }}
             - name: KC_DB_SCHEMA
               value: public
+            - name: KC_DB_URL_PROPERTIES
+              value: "?currentSchema=public"
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -191,6 +193,8 @@ spec:
               value: {{ .Values.ontocloak.deployment.db.database }}
             - name: KC_DB_SCHEMA
               value: public
+            - name: KC_DB_URL_PROPERTIES
+              value: "?currentSchema=public"
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:

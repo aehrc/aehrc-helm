@@ -2,7 +2,7 @@ apiVersion: v2
 name: ontocloak
 description: A Helm chart for Ontocloak
 type: application
-version: 4.1.1
+version: 4.1.2
 dependencies:
   - name: nginx-ingress
     condition: nginx-ingress.enabled
