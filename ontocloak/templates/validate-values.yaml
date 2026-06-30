@@ -1,0 +1,36 @@
+{{- /* Validate serverName is in hostNames */ -}}
+{{- $sn := .Values.ontocloak.serverName }}
+{{- $found := false }}
+{{- range .Values.ontocloak.hostNames }}
+  {{- if eq . $sn }}
+    {{- $found = true }}
+  {{- end }}
+{{- end }}
+{{- if not $found }}
+  {{- fail (printf "ontocloak.serverName '%s' must be one of hostNames: %v" $sn .Values.ontocloak.hostNames) }}
+{{- end }}
+
+{{- if and .Values.ontocloak.ingress.enabled .Values.ontocloak.gateway.enabled }}
+  {{- fail "You must choose between Ingress or Gateway API!" }}
+{{- end }}
+
+{{- $ngi := index .Values "nginx-ingress" }}
+{{- if and  $ngi.enabled .Values.ontocloak.gateway.enabled }}
+  {{- fail "Don't include nginx-ingress-controller when Gateway API is enabled!" }}
+{{- end }}
+{{- if and  $ngi.enabled  (not .Values.ontocloak.ingress.enabled) }}
+  {{- fail "Don't include nginx-ingress-controller when Ingress is disabled!" }}
+{{- end }}
+
+{{- if and .Values.ontocloak.admin.existingSecret.enabled .Values.ontocloak.admin.externalSecret.enabled }}
+  {{- fail "Choose either ontocloak.admin.existingSecret or ontocloak.admin.externalSecret, not both!" }}
+{{- end }}
+{{- if and .Values.ontocloak.admin.existingSecret.enabled (not .Values.ontocloak.admin.existingSecret.name) }}
+  {{- fail "ontocloak.admin.existingSecret.name is required when ontocloak.admin.existingSecret.enabled is true" }}
+{{- end }}
+{{- if and .Values.ontocloak.deployment.db.existingSecret.enabled .Values.ontocloak.deployment.db.externalSecret.enabled }}
+  {{- fail "Choose either ontocloak.deployment.db.existingSecret or ontocloak.deployment.db.externalSecret, not both!" }}
+{{- end }}
+{{- if and .Values.ontocloak.deployment.db.existingSecret.enabled (not .Values.ontocloak.deployment.db.existingSecret.name) }}
+  {{- fail "ontocloak.deployment.db.existingSecret.name is required when ontocloak.deployment.db.existingSecret.enabled is true" }}
+{{- end }}

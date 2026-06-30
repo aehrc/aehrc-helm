@@ -1,11 +1,17 @@
 #!/bin/bash
 set -e
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    CREATE USER {{ .Values.ontocloak.database.user }} WITH ENCRYPTED PASSWORD '{{ .Values.ontocloak.database.password }}';
-    CREATE DATABASE {{ .Values.ontocloak.database.database }} OWNER {{ .Values.ontocloak.database.user }};
-    \connect {{ .Values.ontocloak.database.database }};
-    CREATE SCHEMA {{ .Values.ontocloak.database.database }} AUTHORIZATION {{ .Values.ontocloak.database.user }};
-    GRANT ALL PRIVILEGES ON DATABASE {{ .Values.ontocloak.database.database }} TO {{ .Values.ontocloak.database.user }};
-    ALTER ROLE {{ .Values.ontocloak.database.user }} SET search_path = {{ .Values.ontocloak.database.database }};
+psql \
+    -v ON_ERROR_STOP=1 \
+    -v ontocloak_db_user="$ONTOCLOAK_DB_USERNAME" \
+    -v ontocloak_db_password="$ONTOCLOAK_DB_PASSWORD" \
+    -v ontocloak_db_database="$ONTOCLOAK_DB_DATABASE" \
+    --username "$POSTGRES_USER" \
+    --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE USER :"ontocloak_db_user" WITH ENCRYPTED PASSWORD :'ontocloak_db_password';
+    CREATE DATABASE :"ontocloak_db_database" OWNER :"ontocloak_db_user";
+    \connect :"ontocloak_db_database"
+    CREATE SCHEMA :"ontocloak_db_database" AUTHORIZATION :"ontocloak_db_user";
+    GRANT ALL PRIVILEGES ON DATABASE :"ontocloak_db_database" TO :"ontocloak_db_user";
+    ALTER ROLE :"ontocloak_db_user" SET search_path = :"ontocloak_db_database";
 EOSQL
